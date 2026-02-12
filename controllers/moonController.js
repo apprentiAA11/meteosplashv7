@@ -5,6 +5,8 @@ import { onTimeChange } from "../state/timeState.js";
 import { setMoonState, computeMoonDay} from "../state/moonState.js";
 import { getMoonIllumination, getMoonPhaseMeta } from "../core/moon/moonEngine.js";
 import { findNextPhase } from "../core/moon/findNextPhase.js";
+import { setMoonEvents } from "../state/moonState.js";
+import { fetchMoonEvents } from "../services/moonService.js";
 
 let city = null;
 let timeState = null;
@@ -19,15 +21,19 @@ const SYNODIC_MONTH = 29.530588853;
 export function initMoonController() {
   console.log("🌙 MoonController ready");
 
-  document.addEventListener("city:update", e => {
-    city = e.detail?.selectedCity;
-    if (!city) return;
+document.addEventListener("city:update", async e => {
+  city = e.detail?.selectedCity;
+  if (!city) return;
 
-    selectedDate = null;
-    lastRecomputeDayKey = null;
+  const events = await fetchMoonEvents(city.lat, city.lon);
+  setMoonEvents(events);
 
-    recompute(new Date());
-  });
+  selectedDate = null;
+  lastRecomputeDayKey = null;
+
+  recompute(new Date());
+});
+
 
   document.addEventListener("moon:select-day", e => {
     if (!e.detail?.date || !city) return;
@@ -128,6 +134,8 @@ function recompute(forcedDate = null) {
 
   const nextFull = findNextPhase(baseDate, "full");
   const nextNew  = findNextPhase(baseDate, "new");
+const times = computeMoonDay(baseDate);
+console.log("MOON TIMES RAW:", times);
 
   setMoonState({
     city,
