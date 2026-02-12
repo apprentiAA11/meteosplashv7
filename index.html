@@ -10,6 +10,7 @@
   <!-- 🗺️ Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/suncalc@1.9.0/suncalc.js"></script>
 
   <script>
     console.log("🔥 INDEX.HTML LOADED 🔥");
@@ -359,6 +360,8 @@
     </div>
 
     <div class="moon-main">
+
+      <!-- ===== COLONNE GAUCHE ===== -->
       <div class="moon-left">
         <canvas id="moon-photo" class="moon-disc" width="220" height="220"></canvas>
 
@@ -369,14 +372,22 @@
         </div>
 
         <div class="moon-times" id="moon-times">
-          <div class="moon-time-row"><span>Lever</span><strong>—</strong></div>
-          <div class="moon-time-row"><span>Coucher</span><strong>—</strong></div>
+          <div class="moon-time-row">
+            <span>Lever</span>
+            <strong id="moon-rise">--:--</strong>
+          </div>
+          <div class="moon-time-row">
+            <span>Coucher</span>
+            <strong id="moon-set">--:--</strong>
+          </div>
         </div>
-      </div>
+      </div> <!-- ✅ FIN moon-left -->
 
+      <!-- ===== COLONNE DROITE ===== -->
       <div class="moon-right">
 
-<!-- 🌙 ENTÊTE MOIS -->
+        <!-- 🌙 ENTÊTE MOIS -->
+
 <div class="moon-month-head">
   <button id="moon-prev-month" class="moon-month-btn">‹</button>
   <div id="moon-month-title" class="moon-month-title">—</div>
