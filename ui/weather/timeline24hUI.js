@@ -1,6 +1,8 @@
 // ui/weather/timeline24hUI.js
 
 import { onTimeChange } from "../../state/timeState.js";
+import { openHourOverlay } from "../hourOverlayUI.js";
+import { getTemperatureColor } from "../../utils/colorUtils.js";
 
 let container = null;
 let lastRaw = null;
@@ -18,7 +20,6 @@ export function renderTimeline24h(raw) {
 }
 
 export function initTimeline24hUI() {
-  // on écoute toujours le tick pour rerender
   onTimeChange(() => render());
 }
 
@@ -34,20 +35,11 @@ function render() {
   const temps = h.temperature_2m;
   const codes = h.weather_code;
 
-  /* ===============================
-     ⏱ heure locale RÉELLE de la ville
-     (source UNIQUE)
-  =============================== */
-
-  const now = new Date(lastRaw.current.time); // ✅ local ville
+  const now = new Date(lastRaw.current.time);
   const nowMs = now.getTime();
 
-  /* ===============================
-     🔎 index heure courante
-  =============================== */
-
   let startIndex = times.findIndex(t => {
-    const tMs = new Date(t).getTime(); // ✅ même référentiel
+    const tMs = new Date(t).getTime();
     return tMs >= nowMs;
   });
 
@@ -55,17 +47,26 @@ function render() {
 
   const sliceEnd = Math.min(startIndex + 24, times.length);
 
-  /* ===============================
-     🧱 rendu
-  =============================== */
-
   el.innerHTML = "";
 
   for (let i = startIndex; i < sliceEnd; i++) {
-    const d = new Date(times[i]); // ✅ déjà local
-    const hour = String(d.getHours()).padStart(2, "0");
-    const temp = Math.round(temps[i]);
+
+    const iso = times[i];
+    const hour = iso?.slice(11, 13); // heure locale
+    const temp = Math.round(temps?.[i] ?? 0);
     const code = codes?.[i];
+
+ const color = getTemperatureColor(temp);
+
+const isNight = document.body.classList.contains("theme-night");
+
+const glow = isNight
+  ? `0 0 12px ${color}`
+  : temp > 30
+    ? "0 0 10px rgba(255,0,0,.6)"
+    : temp < 0
+      ? "0 0 8px rgba(0,80,255,.6)"
+      : "0 1px 2px rgba(0,0,0,.25)";
 
     const item = document.createElement("div");
     item.className = "timeline-hour";
@@ -74,8 +75,15 @@ function render() {
     item.innerHTML = `
       <div class="hour">${hour}h</div>
       <div class="icon">${getWeatherEmoji(code)}</div>
-      <div class="temp">${temp}°</div>
+      <div class="temp"
+           style="color:${color}; text-shadow:${glow}">
+        ${temp}°
+      </div>
     `;
+
+    item.addEventListener("click", () => {
+      openHourOverlay(i);
+    });
 
     el.appendChild(item);
   }
