@@ -23,7 +23,6 @@ export function initWeatherController() {
     setWeatherState({ city, raw: null, loading: true });
 
     loadWeatherForCity(city);
-    loadMoonForCity(city); // 🌙 fetch dédié
   });
 }
 
@@ -50,15 +49,24 @@ async function loadWeatherForCity(city) {
     if (!r.ok) throw new Error("Open-Meteo error");
 
     const raw = await r.json();
+    city.timezone = raw.timezone;
+    city.utc_offset_seconds = raw.utc_offset_seconds;
+
 
     // 🌗 jour/nuit
     document.dispatchEvent(new CustomEvent("daynight:update", {
       detail: { raw }
     }));
 
-    setWeatherState({ city, raw, loading: false });
-    updateCityWeather(city, raw);
+    const enrichedCity = {
+     ...city,
+     raw
+   };
 
+   setWeatherState({ city: enrichedCity, raw, loading: false });
+   updateCityWeather(enrichedCity, raw);
+
+    loadMoonForCity(city, raw); // 🌙 fetch dédié
   } catch (e) {
     console.error("🌦 Weather error", e);
     lastKey = null;
@@ -69,46 +77,56 @@ async function loadWeatherForCity(city) {
 /* =====================================================
    🌙 LUNE — MET Norway Sunrise API
 ===================================================== */
+/* =====================================================
+   🌙 LUNE — SunCalc (100% client, sans API externe)
+===================================================== */
 
 async function loadMoonForCity(city) {
   try {
-    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    if (!city || typeof SunCalc === "undefined") return;
 
-    const url =
-      "https://api.met.no/weatherapi/sunrise/3.0/moon" +
-      "?lat=" + encodeURIComponent(city.lat) +
-      "&lon=" + encodeURIComponent(city.lon) +
-      "&date=" + today +
-      "&offset=+00:00";
-
-    console.log("🌙 Moon URL =", url);
-
-    const r = await fetch(url, {
-      headers: {
-        "User-Agent": "MeteoSplash/1.0 https://meteosplash.app"
-      }
-    });
-
-    if (!r.ok) throw new Error("MET Norway moon error");
-
-    const data = await r.json();
+    const today = new Date();
+// 🔥 Calcul direct des heures de la ville
+    const times = SunCalc.getMoonTimes(
+      today,
+      city.lat,
+      city.lon
+    );
 
     const events = [];
 
-    const moon = data?.location?.time?.[0]?.moon;
-    if (!moon) return;
+    function normalizeToUTC(date) {
+      if (!(date instanceof Date)) return null;
 
-    if (moon.moonrise?.time) {
-      events.push({ type: "rise", date: moon.moonrise.time });
+      // On enlève le fuseau navigateur
+      return new Date(Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        date.getHours(),
+        date.getMinutes(),
+        date.getSeconds()
+      ));
     }
 
-    if (moon.moonset?.time) {
-      events.push({ type: "set", date: moon.moonset.time });
+    if (times?.rise instanceof Date && !isNaN(times.rise)) {
+      events.push({
+        type: "rise",
+        date: normalizeToUTC(times.rise)
+      });
+    }
+
+    if (times?.set instanceof Date && !isNaN(times.set)) {
+      events.push({
+        type: "set",
+        date: normalizeToUTC(times.set)
+      });
     }
 
     setMoonEvents(events);
 
   } catch (e) {
-    console.warn("🌙 Moon error", e);
+    console.warn("🌙 Moon SunCalc error", e);
   }
 }
+

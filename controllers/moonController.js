@@ -134,20 +134,19 @@ function recompute(forcedDate = null) {
 
   const nextFull = findNextPhase(baseDate, "full");
   const nextNew  = findNextPhase(baseDate, "new");
-const times = computeMoonDay(baseDate);
-console.log("MOON TIMES RAW:", times);
+
+  const times = computeMoonDay(baseDate);
 
   setMoonState({
     city,
     date: baseDate,
     illumination: illum,
     phase: { ...meta, waxing, age },
-    times: computeMoonDay(baseDate),
+    times,
     calendar,
     nextFull,
     nextNew
   });
-
 }
 
 /* ================= HELPERS ================= */
