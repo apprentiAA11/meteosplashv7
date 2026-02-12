@@ -25,10 +25,41 @@ let renderedMonthKey = null;
 
 export function initMoonUI() {
   preloadMoonTexture("assets/moon/moon_texture.jpg");
-  console.log("🌙 MoonUI ready");
 
-  document.getElementById("btn-moon")?.addEventListener("click", openMoon);
-  document.getElementById("btn-close-moon")?.addEventListener("click", closeMoon);
+  const overlay  = document.getElementById("moon-overlay");
+  const panel    = overlay?.querySelector(".moon-panel");
+  const backdrop = overlay?.querySelector(".moon-backdrop");
+
+  /* ===============================
+     OUVERTURE / FERMETURE
+  =============================== */
+
+  document.getElementById("btn-moon")
+    ?.addEventListener("click", openMoon);
+
+  document.getElementById("btn-close-moon")
+    ?.addEventListener("click", closeMoon);
+
+  // ✔ Clic sur le backdrop
+  backdrop?.addEventListener("click", closeMoon);
+
+  // ✔ Sécurité : si on clique vraiment hors du panneau
+  overlay?.addEventListener("click", (e) => {
+    if (!panel.contains(e.target)) {
+      closeMoon();
+    }
+  });
+
+  // ✔ ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && document.body.classList.contains("overlay-open")) {
+      closeMoon();
+    }
+  });
+
+  /* ===============================
+     NAVIGATION MOIS
+  =============================== */
 
   document.getElementById("moon-prev-month")
     ?.addEventListener("click", () => changeMonth(-1));
@@ -36,28 +67,37 @@ export function initMoonUI() {
   document.getElementById("moon-next-month")
     ?.addEventListener("click", () => changeMonth(1));
 
-  // Escape
-  document.addEventListener("keydown", e => {
-    if (e.key === "Escape") closeMoon();
-  });
-
   // PageUp / PageDown
-  document.addEventListener("keydown", e => {
+  document.addEventListener("keydown", (e) => {
     if (!document.body.classList.contains("overlay-open")) return;
+
     if (e.key === "PageUp")   changeMonth(-1);
     if (e.key === "PageDown") changeMonth(1);
   });
 
+  /* ===============================
+     TEXTURE READY
+  =============================== */
+
   document.addEventListener("moon:texture-ready", () => {
-    lastMoonState && renderMoon(lastMoonState);
+    if (lastMoonState) renderMoon(lastMoonState);
   });
 
-  initMonthYearPickers(); // mois
-  initMoonYearInput();    // année (input)
-  initMoonTodayBtn();     // bouton Aujourd’hui
+  /* ===============================
+     PICKERS
+  =============================== */
+
+  initMonthYearPickers();
+  initMoonYearInput();
+  initMoonTodayBtn();
+
+  /* ===============================
+     SUBSCRIBE STATE
+  =============================== */
 
   onMoonChange(renderMoon);
 }
+
 function initMoonTodayBtn() {
   const btn = document.getElementById("moon-today-btn");
   if (!btn) return;
