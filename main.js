@@ -10,6 +10,7 @@ import { initForecastOverlayUI } from "./ui/forecastOverlayUI.js";
 import { initHistoryController } from "./controllers/historyController.js";
 import { initHistoryUI } from "./ui/historyUI.js";
 import { initMoonController } from "./controllers/moonController.js";
+import { initHourOverlayUI } from "./ui/hourOverlayUI.js";
 
 import { showStatusToast } from "./ui/statusUI.js";
 import { open24hOverlay } from "./ui/dayOverlayUI.js";
@@ -18,6 +19,8 @@ import { initTimeline24hUI, initCityTimelineScroll } from "./ui/weather/timeline
 import { initDayGraphsUI } from "./ui/dayGraphsUI.js";
 import "./ui/currentDetailsUI.js";
 import { initMoonUI } from "./ui/moonUI.js";
+import { initSpokenWeatherUI } from "./ui/spokenWeatherUI.js";
+import { initSpeakController } from "./controllers/speakController.js";
 
 import {
   initThemeUI,
@@ -71,12 +74,14 @@ document.addEventListener("DOMContentLoaded", () => {
   initCityHeaderUI();
   initCitySearchUI();
   initForecastOverlayUI();
+  initHourOverlayUI();
   initSunUI();
   initMoonUI();
   initRainUI();
   initTooltipUI();
   initGeolocateUI();
-
+  initSpokenWeatherUI();
+  initSpeakController();
 
   initTimeline24hUI();
   initCityTimelineScroll();

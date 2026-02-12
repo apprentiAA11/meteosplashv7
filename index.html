@@ -83,11 +83,6 @@
           </div>
         </div>
 
-        <div class="header-actions">
-          <button type="button" class="ghost-button history-button" id="btn-24h">🕒 Prévisions 24h</button>
-          <button type="button" class="ghost-button history-button" id="btn-forecast-popup">📅 Prévisions 7/14j</button>
-          <button type="button" class="ghost-button history-button" id="btn-history">📜 Historique</button>
-        </div>
       </header>
 
       <div class="city-timeline-wrapper">
@@ -421,6 +416,26 @@
   <div id="moon-month-grid" class="moon-month-grid"></div>
 
 </div>
+    </div>
+  </div>
+</div>
+<!-- ================= HOUR DETAIL OVERLAY ================= -->
+<div id="hour-overlay" class="hour-overlay" aria-hidden="true">
+  <div class="overlay-backdrop"></div>
+
+  <div class="hour-popup glass-card">
+    <button id="btn-close-hour" class="overlay-close">✕</button>
+
+    <h3 id="hour-title">—</h3>
+
+    <div class="hour-content">
+      <div id="hour-icon" class="hour-icon">☁️</div>
+
+      <div class="hour-data">
+        <p><strong>Température :</strong> <span id="hour-temp"></span></p>
+        <p><strong>Humidité :</strong> <span id="hour-humidity"></span></p>
+        <p><strong>Vent :</strong> <span id="hour-wind"></span></p>
+      </div>
     </div>
   </div>
 </div>

@@ -694,9 +694,9 @@ body.theme-night .compass-circle::after{
   color:var(--text-muted);
 }
 
-/* ===========================
-   9) LISTE VILLES + TRI
-=========================== */
+/* ==========================================================
+   9) LISTE VILLES — VERSION CLEAN
+========================================================== */
 
 .city-list{
   margin-top: 6px;
@@ -704,6 +704,10 @@ body.theme-night .compass-circle::after{
   flex-direction: column;
   gap: 8px;
 }
+
+/* ==========================================================
+   CITY ITEM BASE
+========================================================== */
 
 .city-item{
   position: relative;
@@ -718,59 +722,42 @@ body.theme-night .compass-circle::after{
   align-items:center;
   gap: 8px;
 
-  /* 👇 le fond devient semi-transparent */
-  background: rgba(255,255,255,.65);
+  background: rgba(255,255,255,.72);
 
-  transition: transform .08s ease, box-shadow .15s ease;
-}
-/* ===========================
-   FOND MÉTÉO — CITY ITEM
-=========================== */
-
-.city-item::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  z-index:0;
-  pointer-events:none;
-  opacity:.55;
-  transition: opacity .3s ease,background .4s ease;
-}
-
-/* contenu au-dessus */
-.city-item > *{
-  position: relative;
-  z-index:1;
-}
-.city-item.weather-cloudy-night::before{
-  background: linear-gradient(180deg, #1e293b, #020617);
-}
-/* fond uniquement pour la ville active */
-.city-item:not(.city-item-active)::before{
-  opacity: 0;
-}
-.city-item.city-item-active::before{
-  opacity: .45;
-}
-
-/* hover : renforce légèrement le fond météo */
-.city-item.city-item-active:hover::before{
-  opacity: .55;
+  transition: transform .12s ease, box-shadow .18s ease;
 }
 
 body.theme-night .city-item{
-  background: rgba(14, 16, 44, .70);
+  background: rgba(14,16,44,.75);
 }
 
-.city-item:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(0,0,0,.20);
-}
+/* ==========================================================
+   STRUCTURE
+========================================================== */
 
 .city-main{ display:flex; flex-direction: column; }
 .city-name{ font-weight: 800; font-size: .92rem; }
 .city-meta{ font-size: .78rem; color: var(--text-muted); }
-.city-temp{ font-size: 1rem; font-weight: 800; }
+
+.city-temp{
+  font-size: 1rem;
+  font-weight: 800;
+  position: relative;
+  z-index: 3;
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.35),
+    0 0 6px rgba(0,0,0,.15);
+}
+
+body.theme-night .city-temp{
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.6),
+    0 0 8px rgba(255,255,255,.25);
+}
+
+/* ==========================================================
+   REMOVE BUTTON
+========================================================== */
 
 .city-remove{
   border-radius: 999px;
@@ -782,84 +769,116 @@ body.theme-night .city-item{
   cursor: pointer;
 }
 
-.sort-shell{
-  display:flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  font-size: .78rem;
-  color: var(--text-muted);
-}
-.sort-shell select{
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(255,255,255,.70);
-  padding: 4px 10px;
-  font-size: .8rem;
-  background: rgba(255,255,255,.90);
-}
-body.theme-night .sort-shell select{
-  background: rgba(18,20,56,.95);
-  border-color: rgba(140,156,255,.30);
-  color: #eef0ff;
+/* ==========================================================
+   HOVER
+========================================================== */
+
+.city-item:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.20);
 }
 
-.cities-footer{
-  margin-top: 10px;
-  display:flex;
-  justify-content: flex-end;
-}
+/* ==========================================================
+   ACTIVE CITY
+========================================================== */
+
 .city-item-active {
-  border: 2px solid rgba(255, 190, 60, 0.9);
-  background: linear-gradient(180deg, #fff4cc, #ffffff);
+  border: 2px solid rgba(255, 120, 0, 0.95);
+
+  background: linear-gradient(180deg, #fff3e0, #ffffff);
+
   box-shadow:
-    0 0 0 2px rgba(255, 190, 60, 0.25),
-    0 10px 22px rgba(255, 190, 60, 0.25);
+    0 0 0 2px rgba(255, 120, 0, 0.35),
+    0 12px 26px rgba(255, 120, 0, 0.35);
+
   transform: scale(1.01);
 }
 
-.city-item-active .city-temp {
-  color: #f4b400;
-  font-weight: 800;
-}
+/* ===== TEXTE MODE JOUR ===== */
 
 .city-item-active strong {
-  color: #111;
+  color: #1a1a1a; /* texte foncé lisible sur fond clair */
 }
+
+.city-item-active small {
+  color: rgba(0,0,0,.65);
+}
+
+/* ==========================================================
+   MODE NUIT
+========================================================== */
+
 body.theme-night .city-item-active {
-  background: linear-gradient(180deg, #2a2450, #14173a);
-  border-color: rgba(255, 200, 90, 0.85);
+  border: 2px solid rgba(255, 70, 0, 0.95);
+
+  background: linear-gradient(180deg, #2a1f18, #151932);
+
   box-shadow:
-    0 0 0 2px rgba(255, 200, 90, 0.20),
-    0 10px 26px rgba(0,0,0,.45);
+    0 0 0 2px rgba(255, 70, 0, 0.4),
+    0 12px 26px rgba(255, 70, 0, 0.45);
 }
+
+/* ===== TEXTE MODE NUIT ===== */
 
 body.theme-night .city-item-active strong {
-  color: #fff;
+  color: #ffffff;
 }
 
-body.theme-night .city-item-active .city-temp {
-  color: #ffd56a;
+body.theme-night .city-item-active small {
+  color: rgba(255,255,255,.75);
 }
-/* ☀️ clair jour */
+
+/* ==========================================================
+   FOND MÉTÉO (pseudo-element)
+========================================================== */
+
+.city-item::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:0;
+  transition: opacity .3s ease, background .4s ease;
+}
+
+/* visible uniquement sur ville active */
+.city-item.city-item-active::before{
+  opacity:.45;
+}
+
+/* ==========================================================
+   CLEAR
+========================================================== */
+
 .city-item.weather-clear-day::before{
   background:
     radial-gradient(circle at 30% 20%, #ffe9a3, transparent 60%),
     linear-gradient(180deg, #60a5fa, #2563eb);
 }
 
-/* 🌙 clair nuit */
 .city-item.weather-clear-night::before{
   background:
     radial-gradient(circle at 70% 20%, #c7d2fe, transparent 55%),
     linear-gradient(180deg, #020617, #0f172a);
 }
 
-/* ☁️ nuages jour */
+/* ==========================================================
+   CLOUDS
+========================================================== */
+
 .city-item.weather-cloudy-day::before{
   background: linear-gradient(180deg, #94a3b8, #475569);
 }
 
-/* 🌧 pluie jour */
+.city-item.weather-cloudy-night::before{
+  background: linear-gradient(180deg, #1e293b, #020617);
+}
+
+/* ==========================================================
+   RAIN
+========================================================== */
+
 .city-item.weather-rain-day::before{
   background:
     repeating-linear-gradient(
@@ -870,7 +889,6 @@ body.theme-night .city-item-active .city-temp {
     linear-gradient(180deg, #64748b, #334155);
 }
 
-/* 🌧 pluie nuit */
 .city-item.weather-rain-night::before{
   background:
     repeating-linear-gradient(
@@ -881,119 +899,93 @@ body.theme-night .city-item-active .city-temp {
     linear-gradient(180deg, #020617, #0f172a);
 }
 
-/* ❄️ neige */
+/* ==========================================================
+   SNOW
+========================================================== */
+
 .city-item.weather-snow-day::before{
   background:
     radial-gradient(circle, rgba(255,255,255,.6) 2px, transparent 3px),
     linear-gradient(180deg, #e5e7eb, #9ca3af);
   background-size: 22px 22px, auto;
 }
+
 .city-item.weather-snow-night::before{
   background:
     radial-gradient(circle, rgba(255,255,255,.4) 2px, transparent 3px),
     linear-gradient(180deg, #020617, #1e293b);
   background-size: 24px 24px, auto;
 }
-/* ===========================
-   MICRO-ANIMATIONS MÉTÉO
-=========================== */
 
-/* couche animation */
+/* ==========================================================
+   MICRO-ANIMATIONS (ACTIVE ONLY)
+========================================================== */
+
 .city-item::after{
   content:"";
   position:absolute;
   inset:0;
-  z-index:0;
+  z-index:1;
   pointer-events:none;
   opacity:0;
   transition: opacity .3s ease;
 }
 
-/* activation uniquement sur ville active */
 .city-item.city-item-active::after{
   opacity: var(--wx-intensity, 0);
 }
 
-/* ===========================
-   PLUIE RÉALISTE
-=========================== */
+/* ---------- RAIN ANIMATION ---------- */
 
 .city-item.weather-rain-day::after,
 .city-item.weather-rain-night::after{
-  content:"";
-  position:absolute;
   inset:-20%;
-  pointer-events:none;
 
   background-image:
-    linear-gradient(
-      rgba(255,255,255,.35),
-      rgba(255,255,255,.35)
-    ),
-    linear-gradient(
-      rgba(255,255,255,.18),
-      rgba(255,255,255,.18)
-    );
+    linear-gradient(rgba(255,255,255,.35), rgba(255,255,255,.35)),
+    linear-gradient(rgba(255,255,255,.18), rgba(255,255,255,.18));
 
-  background-size:
-    1px 18px,
-    1px 28px;
-
-  background-position:
-    0 0,
-    40px 0;
+  background-size: 1px 18px, 1px 28px;
+  background-position: 0 0, 40px 0;
 
   animation:
-    rainFar var(--wx-speed, 1.4s) linear infinite,
-    rainNear calc(var(--wx-speed, 1.4s) * .65) linear infinite;
-
-  opacity: var(--wx-intensity, .4);
+    rainFar var(--wx-speed,1.4s) linear infinite,
+    rainNear calc(var(--wx-speed,1.4s)*.65) linear infinite;
 }
 
-/* couches pluie */
 @keyframes rainFar{
   from { background-position-y: -200px, -200px; }
   to   { background-position-y: 200px, 200px; }
 }
+
 @keyframes rainNear{
   from { background-position-y: -300px, -300px; }
   to   { background-position-y: 300px, 300px; }
 }
 
-/* ===========================
-   NEIGE RÉALISTE
-=========================== */
+/* ---------- SNOW ANIMATION ---------- */
 
 .city-item.weather-snow-day::after,
 .city-item.weather-snow-night::after{
-  content:"";
-  position:absolute;
   inset:-20%;
-  pointer-events:none;
 
   background-image:
     radial-gradient(circle, rgba(255,255,255,.8) 2px, transparent 3px),
     radial-gradient(circle, rgba(255,255,255,.5) 1.5px, transparent 2.5px);
 
-  background-size:
-    22px 22px,
-    34px 34px;
-
-  background-position:
-    0 0,
-    10px 10px;
+  background-size: 22px 22px, 34px 34px;
+  background-position: 0 0, 10px 10px;
 
   animation:
-    snowDrift var(--wx-speed, 4s) linear infinite,
-    snowDriftSlow calc(var(--wx-speed, 4s) * 1.6) linear infinite;
-
-  opacity: var(--wx-intensity, .35);
+    snowDrift var(--wx-speed,4s) linear infinite,
+    snowDriftSlow calc(var(--wx-speed,4s)*1.6) linear infinite;
 }
 
 @keyframes snowDrift{
   from { background-position: 0 -200px; }
   to   { background-position: 40px 200px; }
 }
+
 @keyframes snowDriftSlow{
   from { background-position: 20px -300px; }
   to   { background-position: -20px 300px; }
@@ -1008,6 +1000,24 @@ body.theme-night .city-item-active .city-temp {
   color: var(--text-muted);
   margin: 0;
 }
+/* ===========================
+   CONSEIL DU JOUR — FIX NUIT
+=========================== */
+
+body.theme-night .tips-card {
+  background: linear-gradient(180deg, #1b1f4a, #12153a);
+  border: 1px solid rgba(140,156,255,.25);
+}
+
+body.theme-night .tips-card h3 {
+  color: #ffffff;
+  text-shadow: 0 0 6px rgba(120,140,255,.35);
+}
+
+body.theme-night .tips-card .hint {
+  color: rgba(230,235,255,.85);
+}
+
 
 /* ===========================
    11) STATUS TOAST — BADGE GEOLOC
@@ -1436,12 +1446,14 @@ body.theme-day .radar-tab{
 
 /* ===== TUILE ===== */
 
+/* ===== TUILE ===== */
+
 .timeline-hour{
   flex: 0 0 auto;
 
   width: 64px;
   height: 84px;
-  padding: 6px 6px;
+  padding: 6px;
 
   border-radius: 22px;
 
@@ -1450,15 +1462,17 @@ body.theme-day .radar-tab{
   align-items: center;
   justify-content: space-between;
 
-  background: #ffffff;
-  border: none;
+  /* légèrement plus foncé que blanc pur */
+  background: #f3f4f6;
 
-  box-shadow:
-    0 8px 18px rgba(0,0,0,.10);
+  box-shadow: 0 8px 18px rgba(0,0,0,.08);
 
-  transition: transform .15s ease, box-shadow .15s ease, background .25s ease;
+  transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
 }
-
+body.theme-night .timeline-hour{
+  background: rgba(22,25,65,.95);
+  box-shadow: 0 8px 20px rgba(0,0,0,.55);
+}
 .timeline-hour:hover{
   transform: translateY(-2px);
   box-shadow: 0 12px 26px rgba(0,0,0,.14);
@@ -1482,8 +1496,9 @@ body.theme-day .radar-tab{
 .timeline-hour .timeline-hour-temp,
 .timeline-hour .temp{
   font-size: .9rem;
-  font-weight: 800;
+  font-weight: 900;
   color: #0f172a;
+  Letter-spacing: 0.3px;
 }
 
 /* ===== ACTIVE ===== */
@@ -1551,6 +1566,40 @@ body.theme-day .radar-tab{
   font-size:.9rem;
   text-align:right;
   opacity:.8;
+}
+
+/* Chaque bouton de la timeline */
+.hour-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9999;
+}
+
+.hour-overlay.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hour-popup {
+  width: 320px;
+  padding: 20px;
+  border-radius: 18px;
+  background: linear-gradient(135deg,#0f1b3d,#1b2760);
+  color: white;
+  position: relative;
+}
+
+.hour-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.hour-icon {
+  font-size: 40px;
 }
 
 /* ===========================
@@ -2457,4 +2506,100 @@ main,
 /* sécurité SVG */
 #sun-arc {
   overflow: visible;
+}
+/* =========================
+   CITY ITEM (compact)
+========================= */
+
+.city-item {
+  position: relative;              /* important pour z-index */
+  z-index: 1;
+
+  padding: 6px 10px;
+  border-radius: 12px;
+
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2px;
+
+  transition: .2s;
+}
+
+/* état actif */
+.city-item.city-item-active {
+  background: rgba(255,255,255,.16);
+  border-color: rgba(255,255,255,.25);
+}
+
+/* si tu as un ::before météo */
+.city-item::before,
+.city-item::after {
+  pointer-events: none;
+}
+
+/* =========================
+   TEXTES
+========================= */
+
+.city-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.city-top-row strong {
+  font-weight: 700;
+  font-size: 14px;
+  flex: 1;
+}
+
+.city-sub {
+  font-size: 11px;
+  opacity: .75;
+}
+
+/* =========================
+   ACTIONS MINI (24h / 7/14j / Hist.)
+========================= */
+
+.city-actions {
+  position: relative;
+  z-index: 5;                      /* au-dessus du fond météo */
+
+  display: flex;
+  gap: 3px;
+  margin-left: 6px;
+}
+
+.mini-action {
+  position: relative;
+  z-index: 6;
+  pointer-events: auto;
+
+  font-size: 9px;
+  padding: 1px 4px;
+
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.12);
+
+  color: rgba(255,255,255,.75);
+  line-height: 1.1;
+
+  cursor: pointer;
+  transition: all .15s ease;
+}
+
+.mini-action:hover {
+  background: rgba(255,255,255,.22);
+  color: white;
+  border-color: rgba(255,255,255,.35);
+}
+.city-actions button {
+  pointer-events: auto;
 }
