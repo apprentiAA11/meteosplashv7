@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Météo Splash v7</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- 🗺️ Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+    console.log("🔥 INDEX.HTML LOADED 🔥");
+  </script>
+</head>
+
+<body class="theme-auto weather-clear">
+
+  <div id="status-toast" class="status-toast hidden"></div>
+
+  <div class="rain-scene" id="rain-scene" aria-hidden="true">
+    <div id="storm-layer"></div>
+    <div id="snow-layer"></div>
+    <div id="sun-layer"></div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- ======================= APP ============================ -->
+  <!-- ========================================================= -->
+
+  <div class="app-shell">
+
+    <!-- =================== HEADER =================== -->
+    <header class="app-header glass-card">
+      <div class="brand">
+        <div class="brand-logo">🌈</div>
+        <div class="brand-text">
+          <h1>Météo Splash</h1>
+          <p class="brand-tagline">Prévisions météo</p>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="header-buttons">
+
+          <div class="header-time" id="header-time">
+            <span class="day-indicator" id="day-indicator">☀️</span>
+            <span class="radar-clock" id="radar-clock">--:--</span>
+            <span class="radar-date" id="radar-date">--</span>
+          </div>
+
+          <button type="button" id="btn-moon" class="icon-button">🌙</button>
+          <button type="button" class="icon-button" id="btn-radar">🛰 Radar</button>
+          <button type="button" class="icon-button theme-toggle" id="btn-theme-toggle">🌓 Auto</button>
+          <button type="button" class="icon-button location" id="btn-geolocate">📍 Ma position</button>
+          <button type="button" class="icon-button speak" id="btn-speak">🗣 Météo parlée</button>
+          <button type="button" class="icon-button add-city" id="btn-add-city">➕</button>
+
+        </div>
+      </div>
+    </header>
+
+<!-- ===================== MAIN ===================== -->
+<main class="layout">
+
+  <!-- ========== COLONNE GAUCHE ========== -->
+  <section class="column-left">
+
+    <section class="card glass-card details-card is-selected">
+
+      <header class="card-header">
+        <div class="city-head">
+          <h2 id="details-title">Aucune ville sélectionnée</h2>
+          <div class="city-meta">
+            <span class="coords-badge" id="details-coords">
+              <span class="coords-icon">📍</span>
+              <span class="coords-text"></span>
+            </span>
+            <span id="last-update" class="last-update hidden"></span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button type="button" class="ghost-button history-button" id="btn-24h">🕒 Prévisions 24h</button>
+          <button type="button" class="ghost-button history-button" id="btn-forecast-popup">📅 Prévisions 7/14j</button>
+          <button type="button" class="ghost-button history-button" id="btn-history">📜 Historique</button>
+        </div>
+      </header>
+
+      <div class="city-timeline-wrapper">
+        <button type="button" class="city-timeline-arrow left" id="city-timeline-prev">‹</button>
+        <div class="timeline-24h" id="city-timeline-24h"></div>
+        <button type="button" class="city-timeline-arrow right" id="city-timeline-next">›</button>
+      </div>
+
+      <!-- ================= LIVE ================= -->
+      <div class="details-grid" id="details-current"></div>
+
+      <!-- ================= HISTORIQUE ================= -->
+      <div class="details-grid hidden" id="details-history">
+        <div class="history-panel">
+
+          <div class="history-controls">
+            <span class="history-title">Historique météo</span>
+
+            <div class="history-form">
+              <label for="history-date">Date :</label>
+              <input type="date" id="history-date">
+              <button class="ghost-button" id="btn-history-show">Afficher</button>
+            </div>
+
+            <p class="history-hint">
+              Choisis une date pour voir la météo passée.
+            </p>
+          </div>
+
+          <div class="history-result" id="history-result"></div>
+
+          <button class="ghost-button history-back" id="btn-history-back">
+            ← Retour aux données actuelles
+          </button>
+
+        </div>
+      </div>
+
+      <!-- ================= VENT + SOLEIL ================= -->
+      <div class="wind-block">
+        <div class="wind-compass" id="wind-compass">
+     <div class="compass-circle">
+       <span class="compass-label compass-n">N</span>
+       <span class="compass-label compass-e">E</span>
+       <span class="compass-label compass-s">S</span>
+       <span class="compass-label compass-w">O</span>
+
+       <div class="compass-arrow">
+         <span class="arrow-shaft"></span>
+         <span class="arrow-head"></span>
+         <span class="arrow-base"></span>
+        </div>
+       </div>
+    </div>
+
+        <div class="wind-info">
+          <p class="wind-main" id="wind-line-main">Vent : —</p>
+          <p class="wind-sub" id="wind-line-sub">Rafales : —</p>
+        </div>
+
+        <div class="sun-block">
+          <div class="sun-times" id="sun-times">
+            <div class="sun-item">
+              <span class="sun-icon">🌅</span>
+              <span id="sunrise-time">--:--</span>
+            </div>
+            <div class="sun-item">
+              <span class="sun-icon">🌇</span>
+              <span id="sunset-time">--:--</span>
+            </div>
+          </div>
+
+          <svg id="sun-arc" class="sun-arc" viewBox="0 0 200 100" width="140" height="70">
+            <path id="sun-arc-path" d="M20 80 A80 80 0 0 1 180 80" fill="none" stroke="currentColor" stroke-width="10" opacity="0.25" stroke-linecap="round"/>
+            <path id="sun-arc-progress" d="M20 80 A80 80 0 0 1 180 80" fill="none" stroke="currentColor" stroke-width="10" opacity="0.65" stroke-linecap="round" stroke-dasharray="0 999"/>
+            <circle id="sun-dot" cx="20" cy="80" r="7" fill="currentColor"/>
+          </svg>
+
+          <div class="sun-arc-label" id="sun-arc-label">Soleil</div>
+        </div>
+      </div>
+
+    </section>
+  </section>
+
+
+  <!-- ========== COLONNE DROITE ========== -->
+  <section class="column-right">
+
+    <section class="card glass-card cities-card">
+      <header class="card-header">
+        <div>
+          <h2>Mes villes</h2>
+          <p class="card-subtitle">Clique sur ➕ pour ajouter</p>
+        </div>
+        <div class="sort-shell">
+          <label for="sort-select">Tri</label>
+          <select id="sort-select">
+            <option value="manual">Manuel</option>
+            <option value="alpha">Alphabétique</option>
+            <option value="temp">Température</option>
+          </select>
+        </div>
+      </header>
+
+      <div class="city-list" id="city-list"></div>
+
+      <div class="cities-footer">
+        <button type="button" class="ghost-button danger" id="btn-reset">Réinitialiser</button>
+      </div>
+    </section>
+
+    <section class="card glass-card tips-card">
+      <h3>Conseil du jour</h3>
+      <p class="hint" id="details-tip">Ajoute une ville ou utilise la géolocalisation.</p>
+    </section>
+
+  </section>
+
+</main>
+<!-- ========================================================= -->
+<!-- ======================= OVERLAYS ======================= -->
+<!-- ========================================================= -->
+
+<!-- ================= ADD CITY ================= -->
+<div class="day-overlay" id="add-city-overlay" aria-hidden="true">
+  <div class="overlay-backdrop"></div>
+
+  <div class="day-popup glass-card">
+    <header class="popup-header">
+      <h2>Ajouter une ville</h2>
+      <button type="button" class="icon-button close-popup" id="btn-close-add-city">✕</button>
+    </header>
+
+    <div class="add-city-panel hidden-merged" id="add-city-panel">
+      <form id="city-search-form" autocomplete="off">
+        <input type="search" class="ios-search-input" id="city-input" placeholder="Ajouter une ville…" />
+        <ul class="autocomplete-list" id="autocomplete-list"></ul>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- ================= RADAR ================= -->
+<div class="radar-overlay" id="radar-overlay" aria-hidden="true">
+  <div class="overlay-backdrop"></div>
+
+  <div class="radar-popup glass-card" role="dialog" aria-modal="true">
+    <header class="popup-header">
+      <h2>Radar météo</h2>
+      <button class="icon-button close-popup" id="btn-close-radar">✕</button>
+    </header>
+
+    <p class="radar-subtitle">Radar pluie, vent et températures</p>
+
+    <div class="radar-map-wrapper">
+      <div class="radar-map" id="radar-map"></div>
+
+      <div class="radar-controls">
+
+        <div class="radar-mode-shell">
+          <button class="pill-button pill-button-active" id="radar-mode-toggle">Radar réel</button>
+        </div>
+
+        <div class="radar-timeline-wrapper">
+          <button class="timeline-arrow left" id="timeline-prev">‹</button>
+          <div class="timeline-24h" id="radar-timeline-24h"></div>
+          <button class="timeline-arrow right" id="timeline-next">›</button>
+
+          <div class="radar-timeline-header">
+            <button class="radar-play-button" id="radar-play">▶︎</button>
+            <div class="radar-window-label">
+              <span id="radar-window-text">Maintenant → +12 h</span>
+            </div>
+          </div>
+
+          <input id="radar-timeline-slider" type="range" min="0" max="12" step="1" value="0" />
+        </div>
+
+        <div class="radar-legend">
+  <span class="legend-label">Faible</span>
+
+  <div class="legend-bar"></div>
+
+  <span class="legend-label">Forte</span>
+</div>
+
+      </div>
+    </div>
+
+    <div class="radar-tabs">
+      <button class="radar-tab radar-tab-active" id="radar-tab-rain">Pluie</button>
+      <button class="radar-tab" id="radar-tab-wind">Vent</button>
+      <button class="radar-tab" id="radar-tab-temp">Températures</button>
+    </div>
+
+    <div class="radar-grid" id="radar-grid"></div>
+  </div>
+</div>
+
+
+<!-- ================= FORECAST 7/14 ================= -->
+<div class="day-overlay" id="forecast-overlay" aria-hidden="true">
+  <div class="overlay-backdrop"></div>
+
+  <div class="day-popup glass-card" role="dialog" aria-modal="true">
+
+    <header class="popup-header">
+      <h2>Prévisions</h2>
+      <button type="button" class="icon-button close-popup" id="btn-close-forecast">✕</button>
+    </header>
+
+    <div class="forecast-toggle">
+      <button type="button" class="pill-button pill-button-active" id="btn-forecast-7">7 jours</button>
+      <button type="button" class="pill-button" id="btn-forecast-14">14 jours</button>
+    </div>
+
+    <div class="forecast-list" id="forecast-list"></div>
+
+  </div>
+</div>
+
+
+<!-- ================= 24H ================= -->
+<div class="day-overlay" id="day-overlay" aria-hidden="true">
+  <div class="overlay-backdrop" data-close="day"></div>
+
+  <div class="day-popup glass-card forecast-24h-popup" role="dialog" aria-modal="true">
+
+    <header class="popup-header">
+      <div>
+        <h2 id="day-overlay-title">—</h2>
+        <div id="day-overlay-subtitle" class="day-overlay-subtitle"></div>
+      </div>
+      <button type="button" class="icon-button close-popup" id="btn-close-day">✕</button>
+    </header>
+
+    <!-- BOUTONS -->
+  <div class="day-tabs">
+    <button class="day-tab pill-button-active" data-daytab="temp">Température</button>
+    <button class="day-tab" data-daytab="rain">Pluie</button>
+    <button class="day-tab" data-daytab="wind">Vent</button>
+    <button class="day-tab" data-daytab="humidity">Humidité</button>
+  </div>
+
+
+    <!-- GRAPHS -->
+    <canvas class="day-graph active-day-graph" id="chart-temp"></canvas>
+    <canvas class="day-graph" id="chart-rain"></canvas>
+    <canvas class="day-graph" id="chart-wind"></canvas>
+    <canvas class="day-graph" id="chart-humidity"></canvas>
+  </div>
+</div>
+
+<!-- ================= MOON ================= -->
+<div id="moon-overlay" class="moon-overlay" aria-hidden="true">
+  <div class="moon-backdrop"></div>
+
+  <div class="moon-panel" role="dialog" aria-modal="true">
+    <div class="moon-panel-head">
+      <div class="moon-title">
+        <div class="moon-title-emoji">🌙</div>
+        <div>
+          <div class="moon-title-main">Lune</div>
+          <div class="moon-title-sub" id="moon-subtitle">—</div>
+        </div>
+      </div>
+      <button type="button" id="btn-close-moon" class="moon-close">✕</button>
+    </div>
+
+    <div class="moon-main">
+      <div class="moon-left">
+        <canvas id="moon-photo" class="moon-disc" width="220" height="220"></canvas>
+
+        <div class="moon-phase">
+          <div id="moon-phase-name" class="moon-phase-name">—</div>
+          <div id="moon-phase-desc" class="moon-phase-desc">—</div>
+          <div id="moon-illum" class="moon-illum">—</div>
+        </div>
+
+        <div class="moon-times" id="moon-times">
+          <div class="moon-time-row"><span>Lever</span><strong>—</strong></div>
+          <div class="moon-time-row"><span>Coucher</span><strong>—</strong></div>
+        </div>
+      </div>
+
+      <div class="moon-right">
+
+<!-- 🌙 ENTÊTE MOIS -->
+<div class="moon-month-head">
+  <button id="moon-prev-month" class="moon-month-btn">‹</button>
+  <div id="moon-month-title" class="moon-month-title">—</div>
+  <button id="moon-next-month" class="moon-month-btn">›</button>
+</div>
+
+<!-- 🎛️ CONTROLES -->
+<div class="moon-month-controls">
+  <select id="moon-month-select"></select>
+
+  <input
+    id="moon-year-input"
+    type="number"
+    min="1000"
+    max="2500"
+    step="1"
+    placeholder="Année"
+  />
+
+  <button id="moon-today-btn">Aujourd’hui</button>
+</div>
+
+<!-- 📅 JOURS SEMAINE -->
+<div class="moon-month-weekdays">
+  <span>L</span><span>M</span><span>M</span>
+  <span>J</span><span>V</span><span>S</span><span>D</span>
+</div>
+
+
+  <!-- 📆 GRILLE MENSUELLE -->
+  <div id="moon-month-grid" class="moon-month-grid"></div>
+
+</div>
+    </div>
+  </div>
+</div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

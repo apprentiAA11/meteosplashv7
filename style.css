@@ -1,0 +1,2460 @@
+/* ======================================================================
+   MeteoSplash v7 — STYLE PARTIE 1 (BASE + LAYOUT + CARDS + BUTTONS)
+   - Compatible avec ton index.html v7
+   - Clean + source de vérité unique
+   - Radar / Timeline / Overlays / Moon = PARTIE 2
+====================================================================== */
+
+/* ===========================
+   1) VARIABLES
+=========================== */
+
+:root{
+  --bg-day: linear-gradient(180deg, #cfd8ea 0%, #aebcd4 100%);
+  --bg-night: radial-gradient(circle at top, rgba(24, 26, 64, 0.92), #060a1e 65%);
+  --bg-cloudy: radial-gradient(circle at top, #d0d7e8 0%, #a1b1cf 50%, #7a8bad 100%);
+  --bg-rain: radial-gradient(circle at top, #506c92 0%, #28344c 60%, #111622 100%);
+  --bg-snow: radial-gradient(circle at top, #e2f3ff 0%, #bfd8f0 40%, #9fbcd8 100%);
+  --bg-storm: radial-gradient(circle at top, #2f3355 0%, #17182e 50%, #050611 100%);
+
+  --glass-bg-day: rgba(255,255,255,.84);
+  --glass-bg-night: rgba(18, 20, 60, .90);
+  --glass-border-day: rgba(255,255,255,.70);
+  --glass-border-night: rgba(140,156,255,.40);
+
+  --accent-yellow: #ffd66b;
+  --accent-orange: #ff9a3c;
+  --accent-blue: #4f8dff;
+  --accent-green: #35d69c;
+  --accent-pink: #ff6fb5;
+
+  --text-main: #1b1440;
+  --text-muted: rgba(27,20,64,.68);
+  --danger: #ff5c7a;
+
+  --shadow-soft: 0 18px 40px rgba(0,0,0,.18);
+
+  --radius-lg: 24px;
+  --radius-md: 18px;
+  --radius-sm: 14px;
+  --radius-pill: 999px;
+}
+
+/* ===========================
+   2) BASE / BODY / THEMES
+=========================== */
+
+*{ box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body{
+  margin: 0;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  color: var(--text-main);
+  background: var(--bg-day);
+  transition: background .8s ease, color .35s ease;
+}
+
+/* Thèmes */
+body.theme-day { background: var(--bg-day); color: #0f172a; }
+body.theme-night { background: var(--bg-night); color: #eef0ff; }
+
+/* Variantes météo */
+body.weather-clear.theme-day{
+  background: radial-gradient(circle at top, #ffeaa7 0%, #8fc5ff 40%, #4f6bdd 100%);
+}
+body.weather-cloudy{ background: var(--bg-cloudy); }
+body.weather-rain{ background: var(--bg-rain); }
+body.weather-snow{ background: var(--bg-snow); }
+body.weather-storm{ background: var(--bg-storm); }
+
+/* voile léger */
+body.weather-clear::before,
+body.weather-cloudy::before,
+body.weather-rain::before,
+body.weather-snow::before,
+body.weather-storm::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 20% 0%, rgba(255,255,255,.26), transparent 55%);
+  opacity: .5;
+  mix-blend-mode: screen;
+  transition: opacity 1s ease;
+}
+
+/* no scroll (si overlays en PARTIE 2) */
+body.no-scroll{ overflow: hidden; }
+
+/* utilitaires */
+.hidden{ display: none !important; }
+
+/* ===========================
+   3) CONTAINERS / GLASS
+=========================== */
+
+.app-shell{
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.glass-card{
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg-day);
+  border: 1px solid var(--glass-border-day);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+body.theme-night .glass-card{
+  background: var(--glass-bg-night);
+  border-color: var(--glass-border-night);
+}
+
+/* ===========================
+   4) HEADER
+=========================== */
+
+.app-header{
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+.brand{ display:flex; align-items:center; gap: 12px; }
+.brand-logo{ font-size: 2.2rem; }
+.brand-text h1{ margin:0; font-size: 1.7rem; }
+.brand-tagline{
+  margin: 2px 0 0;
+  font-size: .85rem;
+  color: var(--text-muted);
+}
+
+.header-right{ display:flex; align-items:center; justify-content:flex-end; }
+.header-buttons{ display:flex; flex-wrap: wrap; gap: 8px; }
+
+/* bloc heure (safe) */
+.header-time{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(255,255,255,.78);
+  border: 1px solid rgba(255,255,255,.55);
+  box-shadow: 0 8px 20px rgba(0,0,0,.12);
+}
+
+body.theme-night .header-time{
+  background: rgba(18, 20, 56, .86);
+  border-color: rgba(140,156,255,.30);
+  box-shadow: 0 10px 24px rgba(0,0,0,.30);
+}
+
+#radar-clock{ min-width: 78px; display:inline-block; font-weight: 700; letter-spacing: .04em; }
+#radar-date{ display:inline-block; font-size: .75rem; opacity: .85; }
+.day-indicator{ font-size: .9rem; }
+
+/* ===========================
+   5) BUTTONS
+=========================== */
+
+.icon-button{
+  border-radius: var(--radius-pill);
+  border: none;
+  padding: 8px 14px;
+  font-size: .85rem;
+  background: rgba(255,255,255,.90);
+  color: #1b1440;
+  display:inline-flex;
+  align-items:center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  transition: transform .10s ease, box-shadow .15s ease, background .15s ease;
+}
+body.theme-night .icon-button{
+  background: rgba(15, 16, 44, .95);
+  color: #eef0ff;
+}
+
+.icon-button:hover{ transform: translateY(-1px); box-shadow: 0 10px 26px rgba(0,0,0,.28); }
+.icon-button:active{ transform: translateY(1px); box-shadow: none; }
+
+.icon-button.theme-toggle{
+  background: linear-gradient(135deg, var(--accent-yellow), var(--accent-orange));
+  color: #1b1440;
+}
+.icon-button.location{
+  background: linear-gradient(135deg, var(--accent-blue), #7f63ff);
+  color: #fff;
+}
+.icon-button.speak{
+  background: linear-gradient(135deg, var(--accent-green), #21b5f5);
+  color: #fff;
+}
+.icon-button.add-city{
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-orange));
+  color: #1b1440;
+}
+
+/* boutons secondaires */
+.ghost-button{
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255,255,255,.70);
+  padding: 8px 14px;
+  background: transparent;
+  font-size: .85rem;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+body.theme-night .ghost-button{
+  border-color: rgba(140,156,255,.28);
+  color: rgba(240,240,255,.78);
+}
+
+.ghost-button:hover{
+  background: rgba(255,255,255,.20);
+}
+
+.ghost-button.danger{
+  color: var(--danger);
+  border-color: rgba(255,92,122,.75);
+}
+
+.pill-button{
+  border-radius: var(--radius-pill);
+  border: none;
+  padding: 6px 12px;
+  font-size: .8rem;
+  cursor: pointer;
+  background: rgba(255,255,255,.65);
+  color: #1b1440;
+}
+body.theme-night .pill-button{
+  background: rgba(18,20,56,.95);
+  color: #eef0ff;
+}
+.pill-button.pill-button-active{
+  background: linear-gradient(135deg, var(--accent-yellow), var(--accent-orange));
+  color: #1b1440;
+}
+/* ===========================
+   ADD CITY OVERLAY — FIX COMPLET
+=========================== */
+
+#add-city-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300; /* au-dessus de tout */
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+#add-city-overlay.active {
+  display: flex;
+}
+
+/* Backdrop réel */
+#add-city-overlay .overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,12,28,.55);
+  backdrop-filter: blur(8px);
+  z-index: 0;
+}
+
+/* Panneau */
+#add-city-panel {
+  position: relative;
+  z-index: 1;
+  width: min(92vw, 520px);
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 30px 80px rgba(0,0,0,.45);
+  padding: 16px;
+}
+
+/* état caché animé */
+.hidden-merged {
+  opacity: 0;
+  transform: scale(.96);
+  pointer-events: none;
+}
+
+/* état visible */
+#add-city-overlay.active #add-city-panel {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+/* ===========================
+   6) LAYOUT
+=========================== */
+
+.layout{
+  display:grid;
+  grid-template-columns: minmax(0, 60%) minmax(0, 40%);
+  gap: 20px;
+  align-items: start;
+}
+
+.column-left,
+.column-right{
+  display:flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.card{ padding: 18px 18px 16px; }
+
+.card-header{
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.card-header h2{ margin:0; font-size: 1.2rem; }
+.card-subtitle{
+  margin: 3px 0 0;
+  font-size: .8rem;
+  color: var(--text-muted);
+}
+
+.header-actions{
+  display:flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ===========================
+   7) DETAILS / GRID — CLEAN FINAL
+=========================== */
+
+.details-card{
+  display: flex;
+  flex-direction: column;
+}
+
+/* vrai masquage live / historique */
+#details-history.hidden,
+#details-current.hidden{
+  display: none !important;
+}
+
+/* =======================
+   HEADER VILLE
+======================= */
+
+.city-head h2{ 
+  margin: 0; 
+}
+
+/* nuit : plus froid mais jamais noir */
+body.theme-night .city-head h2{
+  background: rgba(120,140,255,.18);
+  border: 1px solid rgba(140,156,255,.35);
+  color: #eef0ff;
+  padding: 4px 10px;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 6px 18px rgba(0,0,0,.35);
+}
+
+/* =======================
+   META VILLE
+======================= */
+
+.details-card .city-meta{
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-start;
+  gap: 2px;
+  font-size: .7rem;
+  color: var(--text-muted);
+}
+
+/* badge coordonnées */
+
+.coords-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: .65rem;
+  line-height: 1;
+  background: rgba(255,214,107,.18);
+  border: 1px solid rgba(255,214,107,.35);
+  color: rgba(80,60,20,.75);
+}
+
+body.theme-night .coords-badge{
+  background: rgba(255,214,107,.14);
+  border-color: rgba(255,214,107,.35);
+  color: #ffe9b0;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 4px 12px rgba(0,0,0,.35);
+}
+
+/* force couleur interne */
+body.theme-night .coords-badge,
+body.theme-night .coords-badge *{
+  color: #ffe9b0;
+}
+
+/* dernière mise à jour */
+
+.last-update{
+  margin-top: 1px;
+  font-size: .55rem;
+  line-height: 1.1;
+  font-weight: 500;
+  color: rgba(0,0,0,.55);
+}
+
+body.theme-night .last-update{ 
+  opacity: .65;
+  color: rgba(255,255,255,.85);
+}
+
+/* =======================
+   GRILLE DETAILS
+======================= */
+
+.details-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 10px 12px;
+  margin-top: 8px;
+}
+
+/* 🔥 CRITIQUE : ne doit JAMAIS être flex:1 */
+#details-current,
+#details-history{
+  flex: 0 0 auto;
+}
+
+/* cartes */
+/* ===============================
+   CARTES MÉTÉO — DRAGGABLE
+================================ */
+
+.detail-block{
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,.85);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.65);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 64px;
+
+  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: element;
+  transition: transform .15s ease, opacity .15s ease;
+}
+
+.detail-block:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+body.theme-night .detail-block{
+  background: rgba(10,13,40,.96);
+  box-shadow: inset 0 0 0 1px rgba(110,124,255,.45);
+}
+
+.detail-block.dragging {
+  opacity: 0.4;
+  transform: scale(0.97);
+}
+
+.detail-block.drag-over {
+  outline: 2px dashed rgba(120,140,255,.6);
+  outline-offset: 6px;
+}
+
+/* textes */
+
+.detail-label{ font-size: .78rem; color: var(--text-muted); }
+.detail-value{ font-size: 1.1rem; font-weight: 700; }
+.detail-sub{ font-size: .78rem; color: var(--text-muted); }
+
+/* fix nuit */
+
+body.theme-night .detail-label{
+  color: rgba(220,225,255,.85);
+}
+
+body.theme-night .detail-sub{
+  color: rgba(200,205,240,.65);
+}
+
+/* ===========================
+   8) WIND / COMPASS (PRO)
+=========================== */
+.wind-block{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-top:12px;
+}
+
+/* taille conservée */
+.wind-compass{
+  width:96px;
+  height:96px;
+  flex-shrink:0;
+}
+
+.compass-circle{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+ box-shadow:
+    inset 0 0 0 2px rgba(0,0,0,.06),
+    0 6px 16px rgba(0,0,0,.08);
+}
+/* ===== JOUR (photo 3) ===== */
+body.theme-day .compass-circle{
+  background: radial-gradient(circle at 30% 20%, #ffffff, #e6efff);
+  border: 1px solid rgba(37,99,235,.35);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.75),
+    0 12px 28px rgba(0,0,0,.25);
+}
+
+/* ===== NUIT (photo 2) ===== */
+body.theme-night .compass-circle{
+  background: radial-gradient(circle at 30% 20%, #2d3b8e, #050921);
+  border: 1px solid rgba(150,168,255,.70);
+  box-shadow:
+    inset 0 0 0 1px rgba(120,136,255,.35),
+    0 14px 32px rgba(0,0,0,.45);
+}
+
+/* Lettres N E S O */
+.compass-label{
+  position:absolute;
+  font-size:.7rem;
+  font-weight:700;
+  opacity:.85;
+}
+
+body.theme-day .compass-label{ color:#1b1440; }
+body.theme-night .compass-label{ color:rgba(240,240,255,.75); }
+
+.compass-n{ top:6px; left:50%; transform:translateX(-50%); }
+.compass-s{ bottom:6px; left:50%; transform:translateX(-50%); }
+.compass-e{ right:7px; top:50%; transform:translateY(-50%); }
+.compass-w{ left:7px; top:50%; transform:translateY(-50%); }
+
+/* =============================
+   FLECHE BOUSSOLE — FINAL
+   - queue côté direction indiquée
+   - tête vers l'opposé
+   - longueur stop avant lettres
+   - centre masque le milieu
+================================ */
+
+.compass-circle{ position:relative; }
+
+/* container de rotation */
+.compass-arrow{
+  position:absolute;
+  inset:0;                 /* prend tout le disque */
+  transform-origin: 50% 50%;
+  transition: transform .25s ease-out;
+  z-index: 2;
+  pointer-events:none;
+}
+
+/* longueur totale de la flèche */
+:root{
+  --compass-arrow-len: 50px;   /* ajuste 50 → 56 si besoin */
+  --compass-arrow-half: calc(var(--compass-arrow-len) / 2);
+}
+
+/* tige */
+.arrow-shaft{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:4px;
+  height:var(--compass-arrow-len);
+  transform:translate(-50%, -50%);
+  border-radius:999px;
+  z-index:2;
+}
+
+/* pointe (vers l'opposé) */
+.arrow-head{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform: translate(-50%, calc(-50% - var(--compass-arrow-half)));
+  width:0;
+  height:0;
+  border-left:7px solid transparent;
+  border-right:7px solid transparent;
+  border-bottom:12px solid; /* couleur par thème */
+  z-index:3;
+}
+
+/* base (côté direction indiquée) */
+.arrow-base{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform: translate(-50%, calc(-50% + var(--compass-arrow-half)));
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background:#ffffff;
+  border:2px solid; /* couleur par thème */
+  z-index:4;
+}
+
+/* centre (par-dessus la tige) */
+.compass-circle::after{
+  content:"";
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:12px;
+  height:12px;
+  transform:translate(-50%, -50%);
+  border-radius:999px;
+  background:#ffffff;
+  border:2px solid rgba(0,0,0,.10);
+  z-index:5;
+}
+
+/* ===== JOUR ===== */
+body.theme-day .arrow-shaft{
+  background: linear-gradient(to bottom, #60a5fa, #1d4ed8);
+  box-shadow: 0 0 8px rgba(59,130,246,.35);
+}
+body.theme-day .arrow-head{
+  border-bottom-color:#2563eb;
+}
+body.theme-day .arrow-base{
+  border-color:#3b82f6;
+}
+
+/* ===== NUIT ===== */
+body.theme-night .arrow-shaft{
+  background: linear-gradient(to bottom, #ff4b6b, #ffb347);
+  box-shadow: 0 0 12px rgba(255,90,90,.55);
+}
+body.theme-night .arrow-head{
+  border-bottom-color:#ff4b6b;
+  filter: drop-shadow(0 0 6px rgba(255,90,90,.65));
+}
+body.theme-night .arrow-base{
+  background:#0b0f2a;
+  border-color:#ff4b6b;
+  box-shadow: 0 0 6px rgba(255,90,90,.45);
+}
+body.theme-night .compass-circle::after{
+  background:#0b0f2a;
+  border-color: rgba(255,90,90,.75);
+  box-shadow: 0 0 6px rgba(255,90,90,.55);
+}
+
+/* Texte vent */
+.wind-info{ flex:1; }
+.wind-main{ margin:0; font-weight:800; }
+.wind-sub{
+  margin:2px 0 0;
+  font-size:.8rem;
+  color:var(--text-muted);
+}
+
+/* ===========================
+   9) LISTE VILLES + TRI
+=========================== */
+
+.city-list{
+  margin-top: 6px;
+  display:flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.city-item{
+  position: relative;
+  overflow: hidden;
+
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+
+  display:flex;
+  justify-content: space-between;
+  align-items:center;
+  gap: 8px;
+
+  /* 👇 le fond devient semi-transparent */
+  background: rgba(255,255,255,.65);
+
+  transition: transform .08s ease, box-shadow .15s ease;
+}
+/* ===========================
+   FOND MÉTÉO — CITY ITEM
+=========================== */
+
+.city-item::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:.55;
+  transition: opacity .3s ease,background .4s ease;
+}
+
+/* contenu au-dessus */
+.city-item > *{
+  position: relative;
+  z-index:1;
+}
+.city-item.weather-cloudy-night::before{
+  background: linear-gradient(180deg, #1e293b, #020617);
+}
+/* fond uniquement pour la ville active */
+.city-item:not(.city-item-active)::before{
+  opacity: 0;
+}
+.city-item.city-item-active::before{
+  opacity: .45;
+}
+
+/* hover : renforce légèrement le fond météo */
+.city-item.city-item-active:hover::before{
+  opacity: .55;
+}
+
+body.theme-night .city-item{
+  background: rgba(14, 16, 44, .70);
+}
+
+.city-item:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.20);
+}
+
+.city-main{ display:flex; flex-direction: column; }
+.city-name{ font-weight: 800; font-size: .92rem; }
+.city-meta{ font-size: .78rem; color: var(--text-muted); }
+.city-temp{ font-size: 1rem; font-weight: 800; }
+
+.city-remove{
+  border-radius: 999px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: rgba(255,0,0,.10);
+  color: #ff4444;
+  cursor: pointer;
+}
+
+.sort-shell{
+  display:flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: .78rem;
+  color: var(--text-muted);
+}
+.sort-shell select{
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255,255,255,.70);
+  padding: 4px 10px;
+  font-size: .8rem;
+  background: rgba(255,255,255,.90);
+}
+body.theme-night .sort-shell select{
+  background: rgba(18,20,56,.95);
+  border-color: rgba(140,156,255,.30);
+  color: #eef0ff;
+}
+
+.cities-footer{
+  margin-top: 10px;
+  display:flex;
+  justify-content: flex-end;
+}
+.city-item-active {
+  border: 2px solid rgba(255, 190, 60, 0.9);
+  background: linear-gradient(180deg, #fff4cc, #ffffff);
+  box-shadow:
+    0 0 0 2px rgba(255, 190, 60, 0.25),
+    0 10px 22px rgba(255, 190, 60, 0.25);
+  transform: scale(1.01);
+}
+
+.city-item-active .city-temp {
+  color: #f4b400;
+  font-weight: 800;
+}
+
+.city-item-active strong {
+  color: #111;
+}
+body.theme-night .city-item-active {
+  background: linear-gradient(180deg, #2a2450, #14173a);
+  border-color: rgba(255, 200, 90, 0.85);
+  box-shadow:
+    0 0 0 2px rgba(255, 200, 90, 0.20),
+    0 10px 26px rgba(0,0,0,.45);
+}
+
+body.theme-night .city-item-active strong {
+  color: #fff;
+}
+
+body.theme-night .city-item-active .city-temp {
+  color: #ffd56a;
+}
+/* ☀️ clair jour */
+.city-item.weather-clear-day::before{
+  background:
+    radial-gradient(circle at 30% 20%, #ffe9a3, transparent 60%),
+    linear-gradient(180deg, #60a5fa, #2563eb);
+}
+
+/* 🌙 clair nuit */
+.city-item.weather-clear-night::before{
+  background:
+    radial-gradient(circle at 70% 20%, #c7d2fe, transparent 55%),
+    linear-gradient(180deg, #020617, #0f172a);
+}
+
+/* ☁️ nuages jour */
+.city-item.weather-cloudy-day::before{
+  background: linear-gradient(180deg, #94a3b8, #475569);
+}
+
+/* 🌧 pluie jour */
+.city-item.weather-rain-day::before{
+  background:
+    repeating-linear-gradient(
+      120deg,
+      rgba(255,255,255,.18) 0 2px,
+      transparent 2px 6px
+    ),
+    linear-gradient(180deg, #64748b, #334155);
+}
+
+/* 🌧 pluie nuit */
+.city-item.weather-rain-night::before{
+  background:
+    repeating-linear-gradient(
+      120deg,
+      rgba(255,255,255,.10) 0 2px,
+      transparent 2px 6px
+    ),
+    linear-gradient(180deg, #020617, #0f172a);
+}
+
+/* ❄️ neige */
+.city-item.weather-snow-day::before{
+  background:
+    radial-gradient(circle, rgba(255,255,255,.6) 2px, transparent 3px),
+    linear-gradient(180deg, #e5e7eb, #9ca3af);
+  background-size: 22px 22px, auto;
+}
+.city-item.weather-snow-night::before{
+  background:
+    radial-gradient(circle, rgba(255,255,255,.4) 2px, transparent 3px),
+    linear-gradient(180deg, #020617, #1e293b);
+  background-size: 24px 24px, auto;
+}
+/* ===========================
+   MICRO-ANIMATIONS MÉTÉO
+=========================== */
+
+/* couche animation */
+.city-item::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:0;
+  transition: opacity .3s ease;
+}
+
+/* activation uniquement sur ville active */
+.city-item.city-item-active::after{
+  opacity: var(--wx-intensity, 0);
+}
+
+/* ===========================
+   PLUIE RÉALISTE
+=========================== */
+
+.city-item.weather-rain-day::after,
+.city-item.weather-rain-night::after{
+  content:"";
+  position:absolute;
+  inset:-20%;
+  pointer-events:none;
+
+  background-image:
+    linear-gradient(
+      rgba(255,255,255,.35),
+      rgba(255,255,255,.35)
+    ),
+    linear-gradient(
+      rgba(255,255,255,.18),
+      rgba(255,255,255,.18)
+    );
+
+  background-size:
+    1px 18px,
+    1px 28px;
+
+  background-position:
+    0 0,
+    40px 0;
+
+  animation:
+    rainFar var(--wx-speed, 1.4s) linear infinite,
+    rainNear calc(var(--wx-speed, 1.4s) * .65) linear infinite;
+
+  opacity: var(--wx-intensity, .4);
+}
+
+/* couches pluie */
+@keyframes rainFar{
+  from { background-position-y: -200px, -200px; }
+  to   { background-position-y: 200px, 200px; }
+}
+@keyframes rainNear{
+  from { background-position-y: -300px, -300px; }
+  to   { background-position-y: 300px, 300px; }
+}
+
+/* ===========================
+   NEIGE RÉALISTE
+=========================== */
+
+.city-item.weather-snow-day::after,
+.city-item.weather-snow-night::after{
+  content:"";
+  position:absolute;
+  inset:-20%;
+  pointer-events:none;
+
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,.8) 2px, transparent 3px),
+    radial-gradient(circle, rgba(255,255,255,.5) 1.5px, transparent 2.5px);
+
+  background-size:
+    22px 22px,
+    34px 34px;
+
+  background-position:
+    0 0,
+    10px 10px;
+
+  animation:
+    snowDrift var(--wx-speed, 4s) linear infinite,
+    snowDriftSlow calc(var(--wx-speed, 4s) * 1.6) linear infinite;
+
+  opacity: var(--wx-intensity, .35);
+}
+
+@keyframes snowDrift{
+  from { background-position: 0 -200px; }
+  to   { background-position: 40px 200px; }
+}
+@keyframes snowDriftSlow{
+  from { background-position: 20px -300px; }
+  to   { background-position: -20px 300px; }
+}
+
+/* ===========================
+   10) TIPS
+=========================== */
+
+.tips-card .hint{
+  font-size: .85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ===========================
+   11) STATUS TOAST — BADGE GEOLOC
+=========================== */
+
+.status-toast {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  z-index: 9999;
+
+  padding: 10px 18px;
+  border-radius: 999px;
+
+  font-size: .9rem;
+  font-weight: 700;
+
+  background: linear-gradient(135deg, #f87171, #ef4444);
+  color: #fff;
+
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.35);
+
+  opacity: 0;
+  pointer-events: none;
+
+  transition:
+    opacity .25s ease,
+    transform .25s ease;
+}
+
+.status-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.status-toast.hidden {
+  display: none;
+}
+
+/* succès */
+.status-toast.toast-success {
+  background: linear-gradient(135deg, #34d399, #22c55e);
+  color: #fff;
+}
+
+/* erreur */
+.status-toast.toast-error {
+  background: linear-gradient(135deg, #f87171, #ef4444);
+  color: #fff;
+}
+
+/* nuit + succès */
+body.theme-night .status-toast.toast-success {
+  background: linear-gradient(135deg, #22c55e, #14b8a6);
+  color: #ecfeff;
+}
+
+/* nuit + erreur */
+body.theme-night .status-toast.toast-error {
+  background: linear-gradient(135deg, #fb7185, #f43f5e);
+  color: #fff;
+}
+.status-toast.toast-info {
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  color: #fff;
+}
+
+body.theme-night .status-toast.toast-info {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  color: #ecfeff;
+}
+
+/* ===========================
+   12) RESPONSIVE
+=========================== */
+
+@media (max-width: 880px){
+  .layout{ grid-template-columns: minmax(0, 1fr); }
+  .app-header{ flex-direction: column; align-items: flex-start; }
+  .header-right{ width: 100%; }
+  .header-buttons{ justify-content: flex-start; }
+}
+
+@media (max-width: 640px){
+  .card{ padding: 14px; }
+  .details-grid{ grid-template-columns: 1fr; }
+}
+/* =================================================
+   FIX STRUCTURE — "Mes villes" en colonne droite
+   (enfant direct de .layout)
+================================================= */
+/* =========================================================
+   FIX FINAL — placement réel des cartes droites
+========================================================= */
+
+.layout > .cities-card,
+.layout > .tips-card {
+  grid-column: 2;
+  align-self: start;
+}
+
+@media (max-width: 880px) {
+  .layout > .cities-card,
+  .layout > .tips-card {
+    grid-column: 1;
+  }
+}
+/* ======================================================================
+   METEOSPLASH v7 — STYLE PARTIE 2
+   Radar / Overlays / Timeline / Popups / Lune
+   SAFE : n’impacte PAS le layout principal
+====================================================================== */
+
+/* ===========================
+   1) OVERLAYS — BASE (CLEAN)
+=========================== */
+
+/* ===========================
+   1) OVERLAYS — BASE (NO BLUR)
+=========================== */
+
+.overlay-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(10,12,28,.65);
+
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+
+  z-index: 90;
+}
+
+.day-overlay,
+.radar-overlay,
+.moon-overlay{
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.day-overlay.active,
+.radar-overlay.active,
+.moon-overlay.active{
+  display: flex;
+}
+
+
+.hidden{
+  display: none !important;
+}
+
+body.no-scroll{
+  overflow: hidden;
+}
+.day-overlay-subtitle{
+  margin-top: 4px;
+  font-size: .85rem;
+  opacity: .75;
+  font-weight: 500;
+  letter-spacing: .02em;
+}
+
+/* Nuit */
+body.theme-night .day-overlay-subtitle{
+  color: rgba(230,235,255,.75);
+}
+
+/* ===========================
+   2) POPUPS — GÉNÉRIQUE (CLEAN)
+   (Jour / Radar uniquement)
+=========================== */
+
+.day-popup,
+.radar-popup{
+  width: min(92vw, 960px);
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 30px 80px rgba(0,0,0,.45);
+}
+
+.popup-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.15);
+}
+
+.popup-header h2{
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.close-popup{
+  background: none;
+  border: 0;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+/* ===========================
+   LUNE — header seulement (layout ailleurs)
+=========================== */
+
+.moon-panel-head{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.15);
+}
+
+.moon-title{
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.moon-close{
+  background: none;
+  border: 0;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+/* ===========================
+   3) RADAR
+=========================== */
+
+.radar-topbar{
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 120;
+}
+
+.radar-popup{
+  backdrop-filter: blur(18px);
+  padding: 16px;
+}
+
+.radar-subtitle{
+  font-size: .85rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+/* conteneur carte radar */
+.radar-map-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+/* carte Leaflet */
+.radar-map {
+  width: 100%;
+  height: 420px;
+  border-radius: 18px;
+  overflow: hidden;
+  min-height: 360px;
+  max-height: 70vh;
+}
+
+.radar-controls{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.radar-mode-shell{
+  display: flex;
+  justify-content: center;
+}
+
+.radar-tabs{
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.radar-tab{
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255,255,255,.35);
+  padding: 6px 14px;
+  background: transparent;
+  cursor: pointer;
+}
+.radar-tabs,
+.radar-tab {
+  pointer-events: auto;
+  position: relative;
+  z-index: 1000;
+}
+
+.radar-tab-active{
+  background: linear-gradient(135deg, #ff3b3b, #ff6b6b);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 14px rgba(255,60,60,.35);
+}
+
+.radar-grid{
+  margin-top: 12px;
+}
+.wind-marker {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: #4fd1ff;
+  font-size: 28px;
+  text-shadow: 0 0 6px rgba(79,209,255,.6);
+  filter: drop-shadow(0 0 8px rgba(79,209,255,.35));
+  pointer-events:none;
+}
+/* ===== RADAR MODE JOUR ===== */
+
+body.theme-day .radar-popup{
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(12px);
+  color: #0e1228;
+}
+
+body.theme-day .radar-subtitle,
+body.theme-day .radar-window-label,
+body.theme-day .radar-timeline-header{
+  color: rgba(0,0,0,.65);
+}
+
+body.theme-day .radar-tab{
+  border: 1px solid rgba(0,0,0,.15);
+  color: #0e1228;
+}
+.forecast-canvas{
+  position:absolute;
+  top:0;
+  left:0;
+  pointer-events:none;
+  z-index:350;
+  mix-blend-mode:screen;
+}
+/* ===========================
+   RADAR LEGEND
+=========================== */
+
+.radar-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.legend-label {
+  font-size: 12px;
+  opacity: 0.85;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+/* 🔥 Barre premium */
+.legend-bar {
+  flex: 1;
+  height: 14px;
+  border-radius: 999px;
+
+  background: linear-gradient(
+    90deg,
+    #4fc3ff 0%,
+    #0091ff 18%,
+    #00d2ff 35%,
+    #ffd600 55%,
+    #ff8c00 72%,
+    #ff3b30 85%,
+    #a100ff 100%
+  );
+
+  /* profondeur interne */
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,0.35),
+    inset 0 -2px 4px rgba(0,0,0,0.25);
+
+  /* glow externe subtil */
+  filter: saturate(1.2);
+  position: relative;
+}
+
+/* halo lumineux */
+.legend-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+
+  box-shadow:
+    0 0 14px rgba(0,150,255,0.25),
+    0 0 28px rgba(255,120,0,0.15);
+
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ===========================
+   4) TIMELINE 24H — STYLE PILLS BLANCHES (PHOTO)
+=========================== */
+
+.timeline-24h{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+
+  overflow-x: auto;
+  padding: 12px 10px 16px;
+
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.timeline-24h::-webkit-scrollbar{ display:none; }
+
+/* ===== TUILE ===== */
+
+.timeline-hour{
+  flex: 0 0 auto;
+
+  width: 64px;
+  height: 84px;
+  padding: 6px 6px;
+
+  border-radius: 22px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+
+  background: #ffffff;
+  border: none;
+
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.10);
+
+  transition: transform .15s ease, box-shadow .15s ease, background .25s ease;
+}
+
+.timeline-hour:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(0,0,0,.14);
+}
+
+/* ===== CONTENU ===== */
+
+.timeline-hour .timeline-hour-time,
+.timeline-hour .hour{
+  font-size: .7rem;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+.timeline-hour img,
+.timeline-hour .timeline-hour-icon{
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.timeline-hour .timeline-hour-temp,
+.timeline-hour .temp{
+  font-size: .9rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* ===== ACTIVE ===== */
+
+.timeline-hour.active,
+.timeline-hour.current-hour{
+  background: linear-gradient(180deg, #ffd66b, #ff9a3c);
+  color: #1b1440;
+
+  box-shadow:
+    0 14px 28px rgba(255,154,60,.45);
+}
+
+.timeline-hour.active .timeline-hour-time,
+.timeline-hour.active .timeline-hour-temp,
+.timeline-hour.current-hour .timeline-hour-time,
+.timeline-hour.current-hour .timeline-hour-temp{
+  color: #1b1440;
+}
+
+.timeline-arrow{
+  border-radius: var(--radius-pill);
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.radar-timeline-wrapper,
+.city-timeline-wrapper{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.radar-timeline-header{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+}
+
+.radar-play-button{
+  border-radius: var(--radius-pill);
+  border: none;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+#radar-timeline-slider{
+  width: 100%;
+}
+.radar-timeline{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:12px;
+}
+
+#radar-slider{
+  flex:1;
+}
+
+#radar-time-label{
+  min-width:70px;
+  font-size:.9rem;
+  text-align:right;
+  opacity:.8;
+}
+
+/* ===========================
+   5) LÉGENDE RADAR
+=========================== */
+
+.radar-legend{
+  font-size: .75rem;
+}
+
+.legend-container{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legend-group{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+/* ===========================
+   6) OVERLAY AJOUT VILLE
+=========================== */
+
+.ios-search-input{
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255,255,255,.4);
+  font-size: .95rem;
+}
+
+.autocomplete-list{
+  margin-top: 8px;
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.autocomplete-list li{
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,.85);
+  cursor: pointer;
+}
+
+/* ===========================
+   7) OVERLAY PRÉVISIONS / JOUR
+=========================== */
+
+.forecast-toggle{
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.day-tabs{
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.day-graph{
+  display: none;
+  width: 100%;
+  height: 220px;
+}
+.active-day-graph{
+  display: block;
+}
+/* =====================================================
+   FORECAST OVERLAY — PRO
+===================================================== */
+
+#forecast-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+#forecast-overlay.active {
+  display: flex;
+}
+
+#forecast-overlay .overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,12,28,.6);
+  backdrop-filter: blur(8px);
+}
+
+/* fenêtre */
+
+#forecast-overlay .day-popup {
+  position: relative;
+  z-index: 2;
+  width: min(92vw, 820px);
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+/* zone scrollable */
+
+#forecast-overlay .forecast-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 18px;
+}
+/* ===========================
+   FORECAST — CARTES PREMIUM
+=========================== */
+
+.forecast-row {
+  padding: 6px;
+}
+
+.forecast-card {
+  display: grid;
+  grid-template-columns: 140px 1fr 180px;
+  align-items: center;
+  gap: 14px;
+
+  padding: 14px 16px;
+  border-radius: 18px;
+
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+  border: 1px solid rgba(255,255,255,.10);
+
+  backdrop-filter: blur(6px);
+
+  transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
+}
+
+.forecast-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(0,0,0,.25);
+  background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
+}
+
+/* ==== LEFT ==== */
+
+.forecast-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.forecast-date {
+  font-weight: 700;
+  font-size: .9rem;
+  text-transform: capitalize;
+}
+
+.forecast-icon {
+  font-size: 26px;
+}
+
+/* ==== CENTER ==== */
+
+.forecast-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.forecast-temps {
+  display: flex;
+  gap: 16px;
+  font-weight: 800;
+  font-size: 1.3rem;
+}
+
+.forecast-max { color: #ffd60a; }
+.forecast-min { color: #5ac8fa; }
+
+.forecast-labels {
+  display: flex;
+  gap: 26px;
+  font-size: .65rem;
+  opacity: .6;
+  letter-spacing: .04em;
+}
+
+/* ==== RIGHT ==== */
+
+.forecast-right {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  font-size: .8rem;
+  opacity: .9;
+}
+
+.forecast-metric {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+/* ==== MOBILE ==== */
+
+@media (max-width: 640px) {
+  .forecast-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .forecast-left {
+    justify-content: center;
+  }
+
+  .forecast-right {
+    justify-content: center;
+  }
+}
+
+/* scrollbar soft */
+
+#forecast-overlay .forecast-list::-webkit-scrollbar {
+  width: 8px;
+}
+#forecast-overlay .forecast-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.18);
+  border-radius: 10px;
+}
+
+/* =========================================================
+   8. 🌙 LUNE — BLOC FINAL PROPRE (UNIQUE)
+   ne touche qu’à la lune
+========================================================= */
+
+/* panneau */
+
+.moon-panel{
+  display:flex;
+  flex-direction:column;
+  width:min(92vw, 900px);
+  max-height:85vh;
+  overflow:hidden;
+  color:#f2f4ff;
+  text-shadow:0 1px 2px rgba(0,0,0,.35);
+}
+
+/* grille principale */
+
+.moon-main{
+  flex:1 1 auto;
+  min-height:0;
+  display:grid;
+  grid-template-columns:260px 1fr;
+  gap:16px;
+  padding:16px;
+  overflow:hidden;
+}
+
+/* colonne gauche */
+
+.moon-left{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+  min-height:0;
+}
+
+/* colonne droite */
+
+.moon-right{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-width:0;
+  min-height:0;
+  flex:1 1 auto;
+  overflow:hidden;
+}
+
+/* titres */
+.moon-month-head{
+  display:grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items:center;
+  margin-bottom:8px;
+}
+
+#moon-month-title{
+  text-align:center;
+  font-weight:800;
+  font-size:1.05rem;
+  letter-spacing:.02em;
+}
+.moon-month-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.moon-month-controls select {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+/* =====================================================
+   🌙 CALENDRIER MENSUEL — GRILLE
+===================================================== */
+
+#moon-month-grid{
+  display:grid;
+  grid-template-columns:repeat(7, minmax(0,1fr));
+  gap:8px;
+  width:100%;
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  padding-right:6px;
+}
+
+/* cellule jour */
+
+.moon-month-day{
+  position:relative;
+  border-radius:14px;
+  padding:6px 6px 8px;
+  text-align:center;
+  cursor:pointer;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  transition:.15s;
+}
+
+.moon-month-day:hover{
+  background:rgba(255,255,255,.14);
+}
+
+.moon-month-day.off{opacity:.35}
+
+.moon-month-day.today{
+  outline:2px solid rgba(120,140,255,.6);
+  outline-offset:2px;
+}
+
+.moon-month-day.selected{
+  background:linear-gradient(180deg, rgba(255,214,107,.28), rgba(255,154,60,.16));
+  border-color:rgba(255,214,107,.45);
+}
+
+.moon-month-day .n{
+  font-weight:800;
+  font-size:.9rem;
+}
+
+.moon-month-day .disc {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.moon-month-day canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* scrollbar */
+
+#moon-month-grid::-webkit-scrollbar{width:6px}
+#moon-month-grid::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,.18);
+  border-radius:10px;
+}
+
+/* responsive */
+
+@media (max-width:720px){
+  .moon-main{grid-template-columns:1fr}
+}
+
+.moon-month-day .badge{
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: .8rem;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.4));
+}
+
+.moon-month-day.full-moon{
+  background: linear-gradient(180deg, rgba(255,220,140,.18), rgba(255,180,80,.08));
+  border:1px solid rgba(255,220,140,.55);
+  box-shadow:
+    0 0 0 1px rgba(255,220,140,.35),
+    0 0 18px rgba(255,220,140,.45),
+    inset 0 0 12px rgba(255,255,255,.25);
+}
+
+.moon-month-day.full-moon .disc{
+  box-shadow:
+    0 0 12px rgba(255,235,170,.85),
+    0 0 28px rgba(255,220,140,.55),
+    inset -2px 0 6px rgba(0,0,0,.25);
+}
+
+.moon-month-day.new-moon{
+  border: 1px solid rgba(140,160,255,.6);
+  box-shadow:
+    0 0 10px rgba(120,140,255,.45),
+    inset 0 0 12px rgba(0,0,0,.6);
+}
+
+.moon-month-day.new-moon .disc{
+  background: radial-gradient(circle at 30% 30%, #1a1f3d, #050814);
+  box-shadow:
+    inset 2px 0 6px rgba(255,255,255,.08),
+    0 0 6px rgba(120,140,255,.3);
+}
+#moon-times {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.moon-time-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+/* ===========================
+   9) RESPONSIVE
+=========================== */
+
+@media (max-width: 900px){
+  .radar-map-wrapper{
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ===============================
+   FIX UNIQUE — OVERLAYS NETS
+   (BLOC FINAL, AUCUN AUTRE BLUR AILLEURS)
+================================ */
+
+/* Fond flouté */
+body.overlay-open .app-shell {
+  filter: blur(6px);
+}
+
+/* Overlay global */
+.day-overlay,
+.radar-overlay,
+.moon-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.day-overlay.active,
+.radar-overlay.active,
+.moon-overlay.active {
+  display: flex;
+}
+
+/* Fond sombre */
+.overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,12,28,.65);
+  backdrop-filter: blur(6px);
+  z-index: 0;
+}
+
+/* Panneau net */
+.day-popup,
+.radar-popup,
+.moon-panel {
+  position: relative;
+  z-index: 1;
+  background: rgba(18,20,56,.95);
+  border-radius: 22px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.55);
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Sécurité : jamais flouter les overlays */
+.day-overlay,
+.radar-overlay,
+.moon-overlay,
+.day-overlay *,
+.radar-overlay *,
+.moon-overlay * {
+  filter: none !important;
+}
+
+/* Sécurité interaction overlay add-city */
+#add-city-overlay {
+  pointer-events: auto;
+}
+
+#add-city-overlay.active {
+  pointer-events: auto;
+}
+/* ===============================
+   DAY OVERLAY — BOUTONS GRAPHS
+   (style rouge/blanc comme ta photo)
+================================ */
+
+.day-tabs{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin:12px 0 14px;
+}
+
+.day-tab{
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.4);
+  padding:6px 14px;
+  background:rgba(255,255,255,.15);
+  color:#ffffff;
+  font-weight:600;
+  cursor:pointer;
+  transition: all .2s ease;
+}
+
+.day-tab:hover{
+  background:rgba(255,255,255,.25);
+}
+
+.day-tab.active{
+  background:linear-gradient(135deg,#ff5c5c,#ff9a3c);
+  border:none;
+  color:#fff;
+  box-shadow:0 8px 20px rgba(255,90,90,.45);
+}
+/* ===============================
+   OVERLAY 24H — TABS THEME NUIT
+================================ */
+
+body.theme-night #day-overlay .day-tab{
+  background: rgba(255,255,255,.08);
+  color: rgba(240,240,255,.9);
+  border: 1px solid rgba(255,255,255,.25);
+}
+
+body.theme-night #day-overlay .day-tab.active,
+body.theme-night #day-overlay .pill-button-active{
+  background: linear-gradient(135deg, #ff4b4b, #ff9a3c);
+  color: #fff;
+  border: none;
+  box-shadow:
+    0 0 0 1px rgba(255,90,90,.45),
+    0 6px 18px rgba(255,80,80,.35);
+}
+/* =====================================================
+   FORECAST OVERLAY — FINAL PRO (isolé, clean)
+===================================================== */
+
+#forecast-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 15000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+#forecast-overlay.active {
+  display: flex;
+}
+
+/* backdrop */
+
+#forecast-overlay .overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,12,28,.65);
+  backdrop-filter: blur(8px);
+  z-index: 0;
+}
+
+/* fenêtre */
+
+#forecast-overlay .day-popup {
+  position: relative;
+  z-index: 1;
+
+  width: min(92vw, 820px);
+  max-height: 82vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background: rgba(18,20,56,.95);
+  border-radius: 22px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.55);
+  overflow: hidden;
+}
+
+/* header */
+
+#forecast-overlay .popup-header {
+  flex: 0 0 auto;
+}
+
+/* zone scrollable */
+
+#forecast-overlay .forecast-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  padding: 14px 14px 18px;
+}
+
+/* lignes */
+
+#forecast-overlay .forecast-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 220px;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  border: 1px solid rgba(255,255,255,.08);
+}
+ /* 🔥 garde le HTML mais enlève la boîte */
+#forecast-overlay .forecast-card {
+ display: contents;
+}
+/* contenu */
+
+#forecast-overlay .forecast-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#forecast-overlay .forecast-date {
+  font-weight: 700;
+  text-transform: capitalize;
+  min-width: 90px;
+}
+
+#forecast-overlay .forecast-icon {
+  font-size: 22px;
+}
+
+#forecast-overlay .forecast-temps {
+  display: flex;
+  gap: 14px;
+  font-weight: 700;
+}
+
+#forecast-overlay .forecast-max { color: #ffd60a; }
+#forecast-overlay .forecast-min { color: #5ac8fa; }
+
+#forecast-overlay .forecast-metrics {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  opacity: .85;
+  font-size: 13px;
+}
+
+/* scrollbar */
+
+#forecast-overlay .forecast-list::-webkit-scrollbar {
+  width: 8px;
+}
+#forecast-overlay .forecast-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.18);
+  border-radius: 10px;
+}
+
+body:not(.overlay-open) {
+  backdrop-filter: none !important;
+  filter: none !important;
+}
+/* ===============================
+   FORECAST — CONTRASTE & LISIBILITÉ
+================================ */
+
+/* Date (gauche) */
+#forecast-overlay .forecast-date {
+  color: rgba(235,240,255,.92);
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-shadow: 0 1px 3px rgba(0,0,0,.35);
+}
+
+/* Icône météo */
+#forecast-overlay .forecast-icon {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.35));
+}
+
+/* Libellés sous températures */
+#forecast-overlay .forecast-labels {
+  color: rgba(210,220,255,.65);
+}
+
+/* Bloc métriques à droite */
+#forecast-overlay .forecast-right,
+#forecast-overlay .forecast-metrics {
+  color: rgba(235,240,255,.85);
+  font-weight: 600;
+}
+
+/* Icônes métriques */
+#forecast-overlay .forecast-metric {
+  color: rgba(235,240,255,.9);
+}
+
+/* Valeurs faibles (mm, %, km/h) */
+#forecast-overlay .forecast-metric span,
+#forecast-overlay .forecast-metric {
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+}
+
+/* Légère réhausse des cartes */
+#forecast-overlay .forecast-row {
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.09),
+    rgba(255,255,255,.04)
+  );
+}
+/* 🔥 KILL ALL GLOBAL BLUR */
+.app-shell,
+main,
+.layout,
+.column-left,
+.column-right{
+  filter: none !important;
+}
+/* =========================
+   FONDS MÉTÉO — CITY CARD
+========================= */
+
+.city-card{
+  position: relative;
+  overflow: hidden;
+}
+
+/* couche météo */
+.city-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  opacity:.35;
+  pointer-events:none;
+  transition: opacity .4s ease;
+}
+
+/* contenu au-dessus */
+.city-card > *{
+  position: relative;
+  z-index:1;
+}
+
+/* ===== JOUR ===== */
+
+.weather-clear-day::before{
+  background:
+    radial-gradient(circle at 30% 20%, #ffe9a3, transparent 60%),
+    linear-gradient(180deg, #60a5fa, #2563eb);
+}
+
+.weather-cloudy-day::before{
+  background:
+    linear-gradient(180deg, #94a3b8, #475569);
+}
+
+.weather-rain-day::before{
+  background:
+    repeating-linear-gradient(
+      120deg,
+      rgba(255,255,255,.15) 0 2px,
+      transparent 2px 6px
+    ),
+    linear-gradient(180deg, #64748b, #334155);
+}
+
+.weather-snow-day::before{
+  background:
+    radial-gradient(circle, rgba(255,255,255,.6) 2px, transparent 3px),
+    linear-gradient(180deg, #e5e7eb, #9ca3af);
+  background-size: 22px 22px, auto;
+}
+
+/* ===== NUIT ===== */
+
+.weather-clear-night::before{
+  background:
+    radial-gradient(circle at 70% 20%, #c7d2fe, transparent 55%),
+    linear-gradient(180deg, #020617, #0f172a);
+}
+
+.weather-cloudy-night::before{
+  background:
+    linear-gradient(180deg, #1e293b, #020617);
+}
+
+.weather-rain-night::before{
+  background:
+    repeating-linear-gradient(
+      120deg,
+      rgba(255,255,255,.08) 0 2px,
+      transparent 2px 6px
+    ),
+    linear-gradient(180deg, #020617, #0f172a);
+}
+
+.weather-snow-night::before{
+  background:
+    radial-gradient(circle, rgba(255,255,255,.4) 2px, transparent 3px),
+    linear-gradient(180deg, #020617, #1e293b);
+  background-size: 24px 24px, auto;
+}
+/* =========================
+   ARC SOLEIL
+========================= */
+
+.sun-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* animation progression arc */
+#sun-arc-progress {
+  transition: stroke-dasharray 0.4s ease;
+}
+
+/* ligne heures */
+.sun-times {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* ⭐ centre bien */
+  gap: 14px;
+  font-size: 0.9rem;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+/* arc */
+.sun-arc {
+  display: block;          /* ⭐ évite décalage inline SVG */
+  margin-top: 2px;
+}
+
+/* label */
+.sun-arc-label {
+  margin-top: 2px;
+}
+
+/* blocs sunrise / sunset */
+.sunrise,
+.sunset {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* sécurité SVG */
+#sun-arc {
+  overflow: visible;
+}
