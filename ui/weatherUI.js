@@ -18,15 +18,16 @@ export function initWeatherUI() {
 
     try {
 
-      /* ===== MODE LIVE ===== */
-      if (weather.mode !== "history") {
-        renderCurrent(raw);
-        renderWind(raw);
-        renderTimeline24h(raw);
-        applyRainFX(raw);
-        applyWeatherAnimations(raw);
-        updateTip(weather);
-      }
+      /* ===== MODE LIVE + FORECAST ===== */
+  if (weather.mode !== "history") {
+    renderCurrent(raw);
+    renderWind(raw);
+    renderTimeline24h(raw);
+    applyRainFX(raw);
+    applyWeatherAnimations(raw);
+    updateTip(weather);
+  }
+
 
       /* ===== MODE HISTORIQUE ===== */
       if (weather.mode === "history") {

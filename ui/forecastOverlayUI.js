@@ -10,7 +10,14 @@ export function initForecastOverlayUI() {
 
   if (!overlay) return;
 
+  // ✔ Bouton classique
   openBtn?.addEventListener("click", () => openOverlay(overlay));
+
+  // ✔ NOUVEAU : écoute l’event custom
+  document.addEventListener("forecast:open", () => {
+    openOverlay(overlay);
+  });
+
   closeBtn?.addEventListener("click", () => closeOverlay(overlay));
   backdrop?.addEventListener("click", () => closeOverlay(overlay));
 }

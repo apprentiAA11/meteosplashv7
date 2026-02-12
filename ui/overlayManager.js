@@ -15,13 +15,18 @@ export function openOverlay(overlay) {
 export function closeOverlay(overlay) {
   if (!overlay) return;
 
+  // 🔹 retire le focus avant de cacher
+  if (document.activeElement && overlay.contains(document.activeElement)) {
+    document.activeElement.blur();
+  }
+
   overlay.classList.remove("active");
   overlay.setAttribute("aria-hidden", "true");
 
-  // on nettoie après un tick (au cas où un autre overlay s’ouvre)
   setTimeout(() => {
     if (!document.querySelector(".day-overlay.active") &&
-        !document.querySelector("#forecast-overlay.active")) {
+        !document.querySelector("#forecast-overlay.active") &&
+        !document.querySelector(".hour-overlay.active")) {
       document.body.classList.remove("overlay-open", "no-scroll");
     }
   }, 50);
