@@ -279,7 +279,7 @@ function renderTimes(state) {
       addRow(
         box,
         ev.type === "rise" ? "Lever" : "Coucher",
-        toHHMM(ev.date)
+        toHHMM(ev.date, state.city?.timezone)
       );
     });
   } else {
@@ -288,14 +288,14 @@ function renderTimes(state) {
       addRow(
         box,
         t.prevEvent.type === "rise" ? "Dernier lever" : "Dernier coucher",
-        toHHMM(t.prevEvent.date)
+        toHHMM(ev.date, state.city?.timezone)
       );
     }
     if (t?.nextEvent?.date) {
       addRow(
         box,
         t.nextEvent.type === "rise" ? "Prochain lever" : "Prochain coucher",
-        toHHMM(t.nextEvent.date)
+        toHHMM(ev.date, state.city?.timezone)
       );
     }
     if (!t?.prevEvent?.date && !t?.nextEvent?.date) {
@@ -335,10 +335,15 @@ function addRow(box, label, value) {
   box.appendChild(row);
 }
 
-function toHHMM(d) {
+function toHHMM(d, timezone) {
   const dd = d instanceof Date ? d : new Date(d);
-  if (!(dd instanceof Date) || isNaN(dd)) return "—";
-  return dd.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  if (isNaN(dd)) return "—";
+
+  return dd.toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: timezone || undefined
+  });
 }
 
 function toFR(d) {
