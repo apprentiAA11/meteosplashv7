@@ -1,46 +1,71 @@
 /* =====================================================
    WEATHER STATE
-   Pont entre WeatherController et le store global
 ===================================================== */
 
 import { subscribe, setState, getState } from "./store.js";
 
-let weather = null;
+let weather = {
+  raw: null,
+  city: null,
+  mode: "live",
+  historyDate: null
+};
+
 const listeners = new Set();
 
-/* =====================================================
-   API PUBLIQUE
-===================================================== */
+/* ================================
+   MODE
+================================ */
 
-export function setWeatherState(payload) {
-  weather = payload;
+export function setWeatherMode(newMode) {
+  weather = {
+    ...weather,
+    mode: newMode
+  };
 
-  // 🔹 pour ForecastUI (et debug)
-  window.__lastWeatherState = payload;
-
-  // synchro store global
-  setState("weather", payload);
-
-  listeners.forEach(cb => cb(payload));
+  setState("weather", weather);
+  notify();
 }
 
+/* ================================
+   WEATHER DATA
+================================ */
+
+export function setWeatherState(payload) {
+  // ⚠️ IMPORTANT : on ne touche PAS au mode ici
+  weather = {
+    ...weather,
+    ...payload
+  };
+
+  window.__lastWeatherState = weather;
+
+  setState("weather", weather);
+  notify();
+}
+
+/* ================================
+   SUBSCRIPTIONS
+================================ */
 
 export function onWeatherChange(cb) {
-  listeners.add(w => {
-    if (!w?.raw) return;
-    cb(w);
-  });
+  listeners.add(cb);
 }
 
 export function getWeather() {
   return weather || getState("weather");
 }
 
-/* =====================================================
-   SYNC DEPUIS LE STORE (si modifié ailleurs)
-===================================================== */
+function notify() {
+  listeners.forEach(cb => cb(weather));
+}
+
+/* ================================
+   SYNC STORE
+================================ */
 
 subscribe("weather", w => {
+  if (!w) return;
   weather = w;
-  listeners.forEach(cb => cb(w));
+  notify();
 });
