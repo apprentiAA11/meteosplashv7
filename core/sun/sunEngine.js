@@ -41,15 +41,19 @@ export function computeSunProgress(now, sunrise, sunset) {
   if (!(now instanceof Date) ||
       !(sunrise instanceof Date) ||
       !(sunset instanceof Date)) {
-    return null;
+    return 0;
   }
 
-  const n  = toMinutes(now);
-  const sr = toMinutes(sunrise);
-  const ss = toMinutes(sunset);
+  const nowMs = now.getTime();
+  const srMs  = sunrise.getTime();
+  const ssMs  = sunset.getTime();
 
-  // 🌙 Soleil sous horizon
-  if (n < sr || n > ss) return null;
+  // avant lever → 0
+  if (nowMs <= srMs) return 0;
 
-  return (n - sr) / (ss - sr);
+  // après coucher → 1
+  if (nowMs >= ssMs) return 1;
+
+  // progression normale
+  return (nowMs - srMs) / (ssMs - srMs);
 }
