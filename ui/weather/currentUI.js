@@ -16,8 +16,8 @@ export function renderCurrent(j) {
 
     <div class="detail-block" draggable="true" data-id="temp">
       <div class="detail-label">Température</div>
-      <div class="detail-value">${round(c.temperature_2m)}°C</div>
-      <div class="detail-sub">Ressenti : ${round(c.apparent_temperature)}°C</div>
+      <div class="detail-value">${temp(c.temperature_2m)}°C</div>
+      <div class="detail-sub">Ressenti : ${temp(c.apparent_temperature)}°C</div>
     </div>
 
     <div class="detail-block" draggable="true" data-id="humidity">
@@ -61,6 +61,11 @@ export function renderCurrent(j) {
 
 function round(v) {
   return Number.isFinite(v) ? Math.round(v) : "—";
+}
+function temp(v) {
+  return Number.isFinite(v)
+    ? v.toFixed(1)
+    : "—";
 }
 
 function num(v, digits = 1) {

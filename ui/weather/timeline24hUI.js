@@ -52,21 +52,25 @@ function render() {
   for (let i = startIndex; i < sliceEnd; i++) {
 
     const iso = times[i];
-    const hour = iso?.slice(11, 13); // heure locale
-    const temp = Math.round(temps?.[i] ?? 0);
+    const hour = iso?.slice(11, 13);
+
+    const temp = Number(temps?.[i]);
+    const tempDisplay = Number.isFinite(temp)
+      ? Number(temp.toFixed(1))
+      : "—";
+
     const code = codes?.[i];
+    const color = getTemperatureColor(temp);
 
- const color = getTemperatureColor(temp);
+    const isNight = document.body.classList.contains("theme-night");
 
-const isNight = document.body.classList.contains("theme-night");
-
-const glow = isNight
-  ? `0 0 12px ${color}`
-  : temp > 30
-    ? "0 0 10px rgba(255,0,0,.6)"
-    : temp < 0
-      ? "0 0 8px rgba(0,80,255,.6)"
-      : "0 1px 2px rgba(0,0,0,.25)";
+    const glow = isNight
+      ? `0 0 10px ${color}`
+      : temp > 30
+        ? "0 0 10px rgba(255,0,0,.6)"
+        : temp < 0
+          ? "0 0 8px rgba(0,80,255,.6)"
+          : "0 1px 2px rgba(0,0,0,.25)";
 
     const item = document.createElement("div");
     item.className = "timeline-hour";
@@ -77,7 +81,7 @@ const glow = isNight
       <div class="icon">${getWeatherEmoji(code)}</div>
       <div class="temp"
            style="color:${color}; text-shadow:${glow}">
-        ${temp}°
+        ${tempDisplay}°
       </div>
     `;
 
@@ -88,6 +92,7 @@ const glow = isNight
     el.appendChild(item);
   }
 }
+
 
 /* =====================================================
    SCROLL
