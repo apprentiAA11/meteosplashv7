@@ -227,4 +227,24 @@ function randomDuplicateMessage() {
     Math.floor(Math.random() * DUPLICATE_MESSAGES.length)
   ];
 }
+/* ===============================
+   GETTERS / SETTERS
+================================ */
+
+export function getCities() {
+  return [...cities];
+}
+
+export function setCities(newCities) {
+  if (!Array.isArray(newCities)) return;
+
+  cities = newCities;
+
+  // si la ville sélectionnée n'existe plus, on corrige
+  if (selectedCity && !cities.some(c => isSameCity(c, selectedCity))) {
+    selectedCity = cities[0] || null;
+  }
+
+  emit(); // 🔥 utilise ton système propre déjà en place
+}
 
