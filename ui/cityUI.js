@@ -6,7 +6,7 @@ import {
   resetCities,
   isSameCity
 } from "../state/cityState.js";
-
+import { initCityDrag } from "./cityDrag.js";
 import {
   open24hView,
   openForecastView,
@@ -56,6 +56,7 @@ function render() {
 
     const div = document.createElement("div");
     div.className = "city-item";
+    div.setAttribute("draggable", true);
 
     /* ================= FOND MÉTÉO ================= */
 
@@ -162,6 +163,7 @@ function render() {
 
     container.appendChild(div);
   });
+   initCityDrag();
 }
 
 /* =====================================================

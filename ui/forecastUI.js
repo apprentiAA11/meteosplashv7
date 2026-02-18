@@ -103,8 +103,8 @@ function renderForecast() {
 
         <div class="forecast-center">
           <div class="forecast-temps">
-            <span class="forecast-max">${Math.round(tmax[i] ?? 0)}°</span>
-            <span class="forecast-min">${Math.round(tmin[i] ?? 0)}°</span>
+            <span class="forecast-max">${temp(tmax[i])}°</span>
+            <span class="forecast-min">${temp(tmin[i])}°</span>
           </div>
           <div class="forecast-labels">
             <span>max</span>
@@ -130,6 +130,11 @@ function renderForecast() {
 /* ===============================
    HELPERS
 ================================ */
+function temp(v) {
+  const n = Number(v);
+  if (!isFinite(n)) return "—";
+  return n.toFixed(1);
+}
 
 function fmt(v) {
   const n = Number(v);
