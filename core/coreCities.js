@@ -2,6 +2,10 @@
 // Référentiel de villes prioritaires / ambiguës
 
 export const coreCities = [
+{
+  keys: ["lon", "lond", "londres", "london"],
+  query: "London United Kingdom"
+},
 
   {
     keys: ["san", "sf", "fran"],
@@ -62,11 +66,15 @@ export const coreCities = [
     keys: ["osl"],
     query: "Oslo Norway"
   },
+{
+  keys: ["ny", "newy", "new york"],
+  query: "New York USA"
+}, // ✅ ← OBLIGATOIRE
 
-  {
-    keys: ["syd"],
-    query: "Sydney Australia"
-  },
+{
+  keys: ["syd"],
+  query: "Sydney Australia"
+},
 
   {
     keys: ["mel"],
