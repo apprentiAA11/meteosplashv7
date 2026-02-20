@@ -1,8 +1,9 @@
 // controllers/weatherController.js
 
-import { setWeatherState } from "../state/weatherState.js";
+import { setWeatherState, setLiveTemperature } from "../state/weatherState.js";
 import { updateCityWeather } from "../state/cityState.js";
 import { setMoonEvents } from "../state/moonState.js";
+import { getWeather } from "../state/weatherState.js";
 
 let lastKey = null;
 
@@ -25,6 +26,9 @@ export function initWeatherController() {
     loadWeatherForCity(city);
   });
 }
+function detectUnit(countryCode) {
+  return ["US", "LR", "MM"].includes(countryCode) ? "F" : "C";
+}
 
 /* =====================================================
    🌦 METEO
@@ -32,7 +36,7 @@ export function initWeatherController() {
 
 async function loadWeatherForCity(city) {
   try {
-    const url =
+      const url =
       "https://api.open-meteo.com/v1/forecast?" +
       "latitude=" + encodeURIComponent(city.lat) +
       "&longitude=" + encodeURIComponent(city.lon) +
@@ -52,34 +56,38 @@ async function loadWeatherForCity(city) {
     city.timezone = raw.timezone;
     city.utc_offset_seconds = raw.utc_offset_seconds;
 
-
     // 🌗 jour/nuit
     document.dispatchEvent(new CustomEvent("daynight:update", {
       detail: { raw }
     }));
 
-    const enrichedCity = {
-     ...city,
-     raw
-   };
+    const enrichedCity = { ...city, raw };
 
-   setWeatherState({ city: enrichedCity, raw, loading: false });
-   updateCityWeather(enrichedCity, raw);
+    // 🔥 Injection de l'unité dans l'état global
+    setWeatherState({
+  city: enrichedCity,
+  raw,
+  loading: false
+});
 
-    loadMoonForCity(city, raw); // 🌙 fetch dédié
+
+    setLiveTemperature(raw.current?.temperature_2m);
+    updateCityWeather(enrichedCity, raw);
+
+    loadMoonForCity(city, raw); // 🌙 Fetch dédié
   } catch (e) {
     console.error("🌦 Weather error", e);
     lastKey = null;
     setWeatherState({ city, raw: null, error: true });
   }
 }
-
 /* =====================================================
    🌙 LUNE — MET Norway Sunrise API
 ===================================================== */
 /* =====================================================
    🌙 LUNE — SunCalc (100% client, sans API externe)
 ===================================================== */
+
 
 async function loadMoonForCity(city) {
   try {
