@@ -3,6 +3,7 @@ import { openOverlay, closeOverlay } from "./overlayManager.js";
 import { getWeather } from "../state/weatherState.js";
 import { getWeatherIcon } from "../core/utils.js";
 import { formatTemp } from "../utils/tempUtils.js";
+import { getUnit } from "../utils/tempEngine.js";
 
 let overlay, backdrop, btnClose;
 
@@ -17,7 +18,7 @@ export function initHourOverlayUI() {
 
 export function openHourOverlay(hourIndex) {
  const weather = getWeather();
- const unit = getUnit();  // Utilise l'unité globale (°C ou °F) au lieu de forcer "C"
+ const unit = getWeather()?.unit || "C";  // Utilise l'unité globale (°C ou °F) au lieu de forcer "C"
   const h = weather?.raw?.hourly;
   if (!h) return;
 

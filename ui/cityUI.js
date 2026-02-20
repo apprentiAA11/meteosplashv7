@@ -136,10 +136,12 @@ const tempColor = getColor(t);
         </div>
 
         <small>
-          ${city.country || ""}
-          ${city.isUserLocation ? `<span class="city-badge">Ma position</span>` : ""}
-          <span class="coords"> · ${city.lat.toFixed(2)}, ${city.lon.toFixed(2)}</span>
-        </small>
+  ${city.country || ""}
+  ${city.state ? " · " + city.state : ""}
+  ${city.isUserLocation ? `<span class="city-badge">Ma position</span>` : ""}
+  <span class="coords"> · ${city.lat.toFixed(2)}, ${city.lon.toFixed(2)}</span>
+</small>
+
       </div>
 
       <div class="city-right">
