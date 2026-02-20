@@ -12,6 +12,8 @@ import {
   openForecastView,
   openHistoryView
 } from "./detailsViewController.js";
+import { getLiveTemperature } from "../state/weatherState.js";
+import { getUnit, format, getColor } from "../utils/tempEngine.js";
 
 let cities = [];
 let selectedCity = null;
@@ -35,6 +37,15 @@ export function initCityUI() {
     selectedCity = e.detail?.selectedCity || null;
     render();
   });
+
+  // ✅ AJOUT ICI
+  document.addEventListener("temp:unit-change", () => {
+  document.querySelectorAll(".city-temp").forEach(el => {
+    el.classList.remove("update");
+    void el.offsetWidth; // reset animation
+    el.classList.add("update");
+  });
+});
 }
 
 /* =====================================================
@@ -47,12 +58,20 @@ function render() {
   const container = document.getElementById("city-list");
   if (!container) return;
 
+  const unit = getUnit();
+  // ✅ AJOUT ICI
+
   container.innerHTML = "";
 
   cities.forEach((city, i) => {
 
-    const t = city.temp != null ? Math.round(city.temp) : null;
-    const tempColor = getTemperatureColor(t);
+    let t = city.temp != null ? city.temp : null;
+
+if (selectedCity && isSameCity(city, selectedCity)) {
+  const live = getLiveTemperature();
+  if (live != null) t = live;
+}
+const tempColor = getColor(t);
 
     const div = document.createElement("div");
     div.className = "city-item";
@@ -125,8 +144,9 @@ function render() {
 
       <div class="city-right">
         <span class="city-temp" style="color:${tempColor}">
-          ${t != null ? t + "°" : "—"}
+          ${t != null ? format(t, unit) : "—"}
         </span>
+
         <button class="city-remove" aria-label="Supprimer">✕</button>
       </div>
     `;

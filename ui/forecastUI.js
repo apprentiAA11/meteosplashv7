@@ -1,13 +1,16 @@
-// ui/forecastUI.js — PRO (source unique de rendu 7/14j)
+// ui/forecastUI.js — PRO CLEAN (7/14 jours)
 
 import { onWeatherChange } from "../state/weatherState.js";
 import { openDayOverlayByDate } from "./dayOverlayUI.js";
+import { createTempToggle } from "../components/tempToggle.js";
+import { format } from "../utils/tempEngine.js";
+import { getUnit } from "../utils/tempEngine.js";
 
 let currentMode = 7;
 let lastDaily = null;
 
 export function initForecastUI() {
-  console.log("📅 ForecastUI PRO ready");
+  console.log("📅 ForecastUI ready");
 
   document.getElementById("btn-forecast-7")
     ?.addEventListener("click", () => setMode(7));
@@ -23,8 +26,10 @@ export function initForecastUI() {
 ================================ */
 
 function handleWeather(weather) {
+console.log("FORECAST RAW", weather); // 👈 AJOUT
   if (!weather?.raw?.daily) return;
   lastDaily = weather.raw.daily;
+ console.log("DAILY", lastDaily); // 👈 AJOUT
   renderForecast();
 }
 
@@ -45,18 +50,31 @@ function setMode(days) {
 }
 
 /* ===============================
-   RENDER UNIQUE
+   RENDER
 ================================ */
 
 function renderForecast() {
+const unit = getUnit();
+
   if (!lastDaily) return;
 
   const list = document.getElementById("forecast-list");
-  if (!list) return;
+  const container = list; // ou parent si besoin
 
   list.innerHTML = "";
 
-  const d = lastDaily;
+  /* ✅ TOGGLE (sans duplication) */
+  const oldToggle = container.querySelector(".temp-toggle-btn");
+  if (oldToggle) oldToggle.remove();
+
+  const toggle = createTempToggle();
+  if (toggle) container.prepend(toggle);
+
+  /* ================= DATA ================= */
+
+const d = lastDaily || {};
+console.log("USING DAILY", d);
+
 
   const times = d.time || [];
   const tmax  = d.temperature_2m_max || [];
@@ -67,25 +85,28 @@ function renderForecast() {
   const windGusts = d.wind_gusts_10m_max || [];
   const codes = d.weather_code || [];
 
+if (!times.length) {
+  console.warn("❌ NO FORECAST DATA");
+  return;
+}
   const count = Math.min(currentMode, times.length);
+
+  /* ================= LOOP ================= */
 
   for (let i = 0; i < count; i++) {
     const date = new Date(times[i]);
 
     const row = document.createElement("div");
     row.className = "forecast-row";
-   
     row.dataset.day = times[i];
     row.style.cursor = "pointer";
-    
-    row.addEventListener("click", () => {
-  // ferme la popup prévisions
-  document.getElementById("forecast-overlay")
-    ?.classList.remove("active");
 
-  // ouvre le détail jour
-  openDayOverlayByDate(times[i], true);
-});
+    row.addEventListener("click", () => {
+      document.getElementById("forecast-overlay")
+        ?.classList.remove("active");
+
+      openDayOverlayByDate(times[i], true);
+    });
 
     row.innerHTML = `
       <div class="forecast-card">
@@ -103,8 +124,8 @@ function renderForecast() {
 
         <div class="forecast-center">
           <div class="forecast-temps">
-            <span class="forecast-max">${temp(tmax[i])}°</span>
-            <span class="forecast-min">${temp(tmin[i])}°</span>
+            <span class="forecast-max">${format(tmax[i], unit)}</span>
+            <span class="forecast-min">${format(tmin[i], unit)}</span>
           </div>
           <div class="forecast-labels">
             <span>max</span>
@@ -116,8 +137,8 @@ function renderForecast() {
           <div class="forecast-metric">🌧 <span>${fmt(rain[i])} mm</span></div>
           <div class="forecast-metric">💧 <span>${fmt(pop[i])}%</span></div>
           <div class="forecast-metric">
-  💨 <span>${fmt(windGusts[i] ?? windSpeed[i])} km/h</span>
-</div>
+            💨 <span>${fmt(windGusts[i] ?? windSpeed[i])} km/h</span>
+          </div>
         </div>
 
       </div>
@@ -130,11 +151,6 @@ function renderForecast() {
 /* ===============================
    HELPERS
 ================================ */
-function temp(v) {
-  const n = Number(v);
-  if (!isFinite(n)) return "—";
-  return n.toFixed(1);
-}
 
 function fmt(v) {
   const n = Number(v);
@@ -152,3 +168,11 @@ function getIcon(code) {
   if ([95,96,99].includes(code)) return "⛈";
   return "•";
 }
+
+/* ===============================
+   UNIT CHANGE REFRESH
+================================ */
+document.addEventListener("weather:update", () => {
+  renderForecast();
+});
+

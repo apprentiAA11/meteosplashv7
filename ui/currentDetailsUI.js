@@ -1,3 +1,4 @@
+// ui/currentDetailsUI.js
 console.log("✅ currentDetailsUI chargé");
 
 import { onWeatherChange } from "../state/weatherState.js";

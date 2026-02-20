@@ -18,6 +18,9 @@ let lastMoonState = null;
 let currentMonth = null;
 let currentYear  = null;
 let renderedMonthKey = null;
+let lastTimesKey = null;
+let lastHeaderKey = null;
+let lastIllumGlobal = null;
 
 /* =====================================================
    INIT
@@ -45,7 +48,7 @@ export function initMoonUI() {
 
   // ✔ Sécurité : si on clique vraiment hors du panneau
   overlay?.addEventListener("click", (e) => {
-    if (!panel.contains(e.target)) {
+    if (panel && !panel.contains(e.target)) {
       closeMoon();
     }
   });
@@ -186,10 +189,23 @@ function closeMoon() {
 function renderMoon(state) {
   if (!state || !(state.date instanceof Date) || isNaN(state.date)) return;
 
+  const illum = state.illumination?.fraction;
+
+  // 🔥 update moon principale UNIQUEMENT si changement réel
+  if (
+    Number.isFinite(illum) &&
+    (!Number.isFinite(lastIllumGlobal) ||
+     Math.abs(illum - lastIllumGlobal) > 0.001)
+  ) {
+    renderMain(state);
+    lastIllumGlobal = illum;
+  }
+
   lastMoonState = state;
 
   const overlay = document.getElementById("moon-overlay");
   if (overlay && !overlay.classList.contains("active")) return;
+
 
   // ✅ init mois affiché UNE seule fois
   if (currentMonth === null || currentYear === null) {
@@ -198,19 +214,42 @@ function renderMoon(state) {
     renderedMonthKey = null;
   }
 
+  const headerKey =
+  state.date?.getTime?.() + "|" + (state.city?.name || "");
+
+if (headerKey !== lastHeaderKey) {
   renderHeader(state);
-  renderMain(state);
+  lastHeaderKey = headerKey;
+}
+
+const toTs = d => d ? new Date(d).getTime() : 0;
+
+const timesKey = state.times
+  ? [
+      toTs(state.times?.prevEvent?.date),
+      toTs(state.times?.nextEvent?.date),
+      state.times?.events?.length || 0
+    ].join("|")
+  : "no-times";
+
+
+if (timesKey !== lastTimesKey) {
   renderTimes(state);
+  lastTimesKey = timesKey;
+}
 
-  const monthKey = `${currentYear}-${String(currentMonth + 1).padStart(2,"0")}`;
+  // clé mois
+const monthKey = `${currentYear}-${String(currentMonth + 1).padStart(2,"0")}`;
 
+// 🔥 rebuild UNIQUEMENT si mois change
+if (renderedMonthKey !== monthKey) {
+  renderMonth(state);
+  renderedMonthKey = monthKey;
+}
 
-  if (renderedMonthKey !== monthKey) {
-    renderMonth(state);
-    renderedMonthKey = monthKey;
-  } else {
-    updateSelectedInGrid(state.date);
-  }
+// 🔥 toujours mettre à jour la sélection (léger)
+updateSelectedInGrid(state.date);
+
 }
 
 /* =====================================================
@@ -237,12 +276,16 @@ function renderMain(state) {
   const canvas  = document.getElementById("moon-photo");
 
   if (canvas && state.illumination) {
-    const last = Number(canvas.dataset.lastIllum);
+    const last = Number(canvas.dataset.lastIllum || -1);
     const frac = Number(state.illumination.fraction);
 
     if (!Number.isFinite(last) || Math.abs(last - frac) > 0.001) {
       prepareCanvas(canvas);
       drawMoon(canvas, frac, !!state.phase?.waxing);
+      canvas.style.transform = "scale(1.05)";
+      setTimeout(() => {
+       canvas.style.transform = "scale(1)";
+      }, 140);
       canvas.dataset.lastIllum = String(frac);
     }
   }
@@ -284,20 +327,25 @@ function renderTimes(state) {
     });
   } else {
     // ✅ s’il n’y a pas d’événement dans la journée, on montre "dernier" + "prochain" si dispo
-    if (t?.prevEvent?.date) {
-      addRow(
-        box,
-        t.prevEvent.type === "rise" ? "Dernier lever" : "Dernier coucher",
-        toHHMM(ev.date, state.city?.timezone)
-      );
-    }
-    if (t?.nextEvent?.date) {
-      addRow(
-        box,
-        t.nextEvent.type === "rise" ? "Prochain lever" : "Prochain coucher",
-        toHHMM(ev.date, state.city?.timezone)
-      );
-    }
+if (t?.prevEvent?.date) {
+  const d = t.prevEvent.date;
+  if (d) {
+    addRow(
+      box,
+      t.prevEvent.type === "rise" ? "Dernier lever" : "Dernier coucher",
+      toHHMM(d, state.city?.timezone)
+    );
+  }
+}
+
+if (t?.nextEvent?.date) {
+  addRow(
+    box,
+    t.nextEvent.type === "rise" ? "Prochain lever" : "Prochain coucher",
+    toHHMM(t.nextEvent.date, state.city?.timezone)
+  );
+}
+
     if (!t?.prevEvent?.date && !t?.nextEvent?.date) {
       addRow(box, "Lune", "pas d’événement proche");
     }
@@ -473,7 +521,7 @@ function renderMonth(state) {
 
   // 🔁 synchro selects
   const monthSel = document.getElementById("moon-month-select");
-  const yearSel  = document.getElementById("moon-year-select");
+  const yearSel = document.getElementById("moon-year-input");
   monthSel && (monthSel.value = currentMonth);
   yearSel  && (yearSel.value  = currentYear);
 
@@ -506,7 +554,7 @@ function buildMonthDay(date, state, offMonth) {
 // on utilise une estimation simple basée sur l’âge lunaire
 const src = day || estimateMoonForDate(date, state);
 
-if (cv && src?.illumination) {
+if (cv && src?.illumination?.fraction != null){
   prepareCanvas(cv);
   drawMoon(
     cv,
@@ -515,15 +563,22 @@ if (cv && src?.illumination) {
   );
 }
 
-  if (day?.isFull) wrap.classList.add("full-moon");
+  if (day?.isFull) {
+  wrap.classList.add("full-moon");
+  }
   if (day?.isNew)  wrap.classList.add("new-moon");
 
   wrap.dataset.date = date.toISOString();
 
-  wrap.addEventListener("click", () => {
-    // ✅ ne change PAS currentMonth/currentYear ici
-    document.dispatchEvent(new CustomEvent("moon:select-day", { detail: { date } }));
-  });
+wrap.addEventListener("click", () => {
+  wrap.style.transform = "scale(0.92)";
+  setTimeout(() => {
+    wrap.style.transform = "";
+  }, 120);
+
+  document.dispatchEvent(new CustomEvent("moon:select-day", { detail: { date } }));
+});
+
 
   return wrap;
 }
@@ -537,6 +592,7 @@ function updateSelectedInGrid(selectedDate) {
     const iso = el.dataset.date;
     if (!iso) return;
     const d = new Date(iso);
+    if (isNaN(d)) return;
     el.classList.toggle("selected", sameDay(d, selectedDate));
   });
 }
