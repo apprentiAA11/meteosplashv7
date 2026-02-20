@@ -61,6 +61,7 @@ function emitError(message) {
 ===================================================== */
 
 export function addCity(city) {
+
   if (!isValidCity(city)) return false;
 
   const existing = cities.find(c => isSameCity(c, city));
@@ -69,18 +70,63 @@ export function addCity(city) {
     selectedCity = existing;
     emit();
     emitError(randomDuplicateMessage());
-    return false; // ⛔ doublon
+    return false;
   }
+
+  // ✅ unité intelligente (fallback)
+  const countryCode = city.country_code?.toLowerCase?.() || "";
+
+  const unit =
+    city.unit ||
+    (["us", "lr", "mm"].includes(countryCode) ? "F" : "C");
+
+
+  const newCity = {
+    ...city,
+    unit
+  };
 
   if (city.isUserLocation) {
     cities = cities.filter(c => !c.isUserLocation);
   }
 
-  cities.push(city);
-  selectedCity = city;
-  emit();
+  cities.push(newCity);
+  selectedCity = newCity;
 
-  return true; // ✅ ajout réel
+  emit();
+  return true;
+}
+export function toggleCityUnit(city) {
+  if (!city) return;
+
+  const newUnit = city.unit === "C" ? "F" : "C";
+
+  updateCity(city, { unit: newUnit });
+
+  document.dispatchEvent(new CustomEvent("temp:unit-change", {
+    detail: { unit: newUnit }
+  }));
+}
+
+export function updateCity(targetCity, updates) {
+  cities = cities.map(c =>
+    isSameCity(c, targetCity)
+      ? { ...c, ...updates }
+      : c
+  );
+
+  if (selectedCity && isSameCity(selectedCity, targetCity)) {
+    selectedCity = {
+      ...selectedCity,
+      ...updates
+    };
+  }
+
+  emit();
+}
+
+function getDefaultUnit(countryCode) {
+  return ["us", "lr", "mm"].includes(countryCode) ? "F" : "C";
 }
 
 export function removeCity(index) {
@@ -233,6 +279,10 @@ function randomDuplicateMessage() {
 
 export function getCities() {
   return [...cities];
+}
+
+export function getSelectedCity() {
+  return selectedCity;
 }
 
 export function setCities(newCities) {

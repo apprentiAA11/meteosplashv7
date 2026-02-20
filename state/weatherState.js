@@ -3,15 +3,43 @@
 ===================================================== */
 
 import { subscribe, setState, getState } from "./store.js";
+import { getSelectedCity } from "./cityState.js";
 
 let weather = {
   raw: null,
   city: null,
   mode: "live",
-  historyDate: null
+  historyDate: null,
+
+  // 🔥 AJOUT ICI
+  unit: "C",
+  userForcedUnit: false
 };
 
 const listeners = new Set();
+
+
+function detectUnit(countryCode) {
+  // Force °C pour les villes françaises (et européennes si nécessaire)
+  if (countryCode === "FR") return "C";  // Forcer °C pour la France
+  return ["US", "LR", "MM"].includes(countryCode) ? "F" : "C";  // °F pour US, LR, MM, sinon °C
+}
+
+export function setUnit(unit) {
+  weather = {
+    ...weather,
+    unit,
+    userForcedUnit: true
+  };
+
+  setState("weather", weather);
+  notify();
+}
+
+export function getUnit() {
+  return weather.unit;
+}
+
 
 /* ================================
    MODE
@@ -32,7 +60,6 @@ export function setWeatherMode(newMode) {
 ================================ */
 
 export function setWeatherState(payload) {
-  // ⚠️ IMPORTANT : on ne touche PAS au mode ici
   weather = {
     ...weather,
     ...payload
@@ -58,6 +85,8 @@ export function getWeather() {
 
 function notify() {
   listeners.forEach(cb => cb(weather));
+
+  document.dispatchEvent(new Event("weather:update")); // 🔥 AJOUT
 }
 
 /* ================================
@@ -69,3 +98,29 @@ subscribe("weather", w => {
   weather = w;
   notify();
 });
+
+/* ===============================
+   LIVE TEMPERATURE ENGINE
+================================ */
+
+let lastTemp = null;
+let lastUpdateTs = null;
+
+export function setLiveTemperature(temp) {
+  if (!Number.isFinite(temp)) return;
+
+  lastTemp = temp;
+  lastUpdateTs = Date.now();
+}
+
+export function getLiveTemperature() {
+  if (!Number.isFinite(lastTemp) || !lastUpdateTs) return null;
+
+  const deltaMin = (Date.now() - lastUpdateTs) / 60000;
+
+  const drift =
+    Math.sin(deltaMin / 8) * 0.25 +
+    Math.cos(deltaMin / 3) * 0.1;
+
+  return lastTemp + drift;
+}
