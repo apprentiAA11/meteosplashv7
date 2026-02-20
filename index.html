@@ -88,7 +88,17 @@
 
       <header class="card-header">
         <div class="city-head">
-          <h2 id="details-title">Aucune ville sélectionnée</h2>
+  <div class="city-head-top">
+    <h2 id="details-title">Aucune ville sélectionnée</h2>
+
+    <!-- 🔥 BOUTON TEMP -->
+    <button id="btn-temp-unit" class="temp-toggle">
+      °C
+    </button>
+  </div>
+
+  <div class="city-meta">
+
           <div class="city-meta">
             <span class="coords-badge" id="details-coords">
               <span class="coords-icon">📍</span>
@@ -450,6 +460,9 @@
         <p><strong>Température :</strong> <span id="hour-temp"></span></p>
         <p><strong>Humidité :</strong> <span id="hour-humidity"></span></p>
         <p><strong>Vent :</strong> <span id="hour-wind"></span></p>
+     <div class="hour-metric">
+      🌧 Pluie : <span id="hour-rain">—</span>
+    </div>
       </div>
     </div>
   </div>

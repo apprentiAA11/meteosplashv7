@@ -11,6 +11,7 @@ import { initHistoryController } from "./controllers/historyController.js";
 import { initHistoryUI } from "./ui/historyUI.js";
 import { initMoonController } from "./controllers/moonController.js";
 import { initHourOverlayUI } from "./ui/hourOverlayUI.js";
+import { initTempUnitUI } from "./ui/tempUnitUI.js";
 
 import { showStatusToast } from "./ui/statusUI.js";
 import { open24hOverlay } from "./ui/dayOverlayUI.js";
@@ -78,6 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSunUI();
   initMoonUI();
   initRainUI();
+  initTempUnitUI();
   initTooltipUI();
   initGeolocateUI();
   initSpokenWeatherUI();
@@ -95,3 +97,10 @@ setInterval(() => {
     document.body.classList.remove("overlay-open", "no-scroll");
   }
 }, 1000);
+/* ===============================
+   LIVE TEMP REFRESH
+================================ */
+
+setInterval(() => {
+  document.dispatchEvent(new CustomEvent("temp:tick"));
+}, 30000);
