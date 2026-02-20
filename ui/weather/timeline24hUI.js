@@ -2,7 +2,9 @@
 
 import { onTimeChange } from "../../state/timeState.js";
 import { openHourOverlay } from "../hourOverlayUI.js";
-import { getTemperatureColor } from "../../utils/colorUtils.js";
+import { getLiveTemperature } from "../../state/weatherState.js";
+import { getUnit, formatShort, getColor } from "../../utils/tempEngine.js";
+import { createTempToggle } from "../../components/tempToggle.js";
 
 let container = null;
 let lastRaw = null;
@@ -19,16 +21,27 @@ export function renderTimeline24h(raw) {
   render();
 }
 
+let isInit = false;
+
 export function initTimeline24hUI() {
-  onTimeChange(() => render());
+  if (isInit) return;
+  isInit = true;
+
+  const view = document.getElementById("view-24h");
+  if (!view) return;
+
+  // 🔥 évite doublon si re-init
+  const existing = view.querySelector(".temp-toggle-btn");
+  if (existing) existing.remove();
+
+  const toggle = createTempToggle();
+  if (toggle) view.prepend(toggle);
 }
 
 function render() {
+  const unit = getUnit();
   const el = getContainer();
   if (!el || !lastRaw?.hourly || !lastRaw?.current) return;
-
-  el.classList.remove("hidden", "hidden-merged");
-  el.style.display = "";
 
   const h = lastRaw.hourly;
   const times = h.time;
@@ -38,61 +51,57 @@ function render() {
   const now = new Date(lastRaw.current.time);
   const nowMs = now.getTime();
 
-  let startIndex = times.findIndex(t => {
-    const tMs = new Date(t).getTime();
-    return tMs >= nowMs;
-  });
-
+  let startIndex = times.findIndex(t => new Date(t).getTime() >= nowMs);
   if (startIndex < 0) startIndex = 0;
 
   const sliceEnd = Math.min(startIndex + 24, times.length);
 
-  el.innerHTML = "";
+  const frag = document.createDocumentFragment();
 
-  for (let i = startIndex; i < sliceEnd; i++) {
+for (let i = startIndex; i < sliceEnd; i++) {
 
-    const iso = times[i];
-    const hour = iso?.slice(11, 13);
+  let temp = Number(temps?.[i]);
+  if (!Number.isFinite(temp)) temp = null;
 
-    const temp = Number(temps?.[i]);
-    const tempDisplay = Number.isFinite(temp)
-      ? Number(temp.toFixed(1))
-      : "—";
-
-    const code = codes?.[i];
-    const color = getTemperatureColor(temp);
-
-    const isNight = document.body.classList.contains("theme-night");
-
-    const glow = isNight
-      ? `0 0 10px ${color}`
-      : temp > 30
-        ? "0 0 10px rgba(255,0,0,.6)"
-        : temp < 0
-          ? "0 0 8px rgba(0,80,255,.6)"
-          : "0 1px 2px rgba(0,0,0,.25)";
-
-    const item = document.createElement("div");
-    item.className = "timeline-hour";
-    if (i === startIndex) item.classList.add("active");
-
-    item.innerHTML = `
-      <div class="hour">${hour}h</div>
-      <div class="icon">${getWeatherEmoji(code)}</div>
-      <div class="temp"
-           style="color:${color}; text-shadow:${glow}">
-        ${tempDisplay}°
-      </div>
-    `;
-
-    item.addEventListener("click", () => {
-      openHourOverlay(i);
-    });
-
-    el.appendChild(item);
+  // 🔥 LIVE sur heure courante
+  if (i === startIndex) {
+    const live = getLiveTemperature();
+    if (Number.isFinite(live)) temp = live;
   }
+
+  // ✅ couleur via tempEngine
+  const color = temp != null
+    ? getColor(temp)
+    : "rgba(255,255,255,.6)";
+
+  const item = document.createElement("div");
+  item.className = "timeline-hour";
+
+  if (i === startIndex) {
+    item.classList.add("active");
+  }
+
+  item.innerHTML = `
+    <div class="hour">${times[i].slice(11, 13)}h</div>
+    <div class="icon">${getWeatherEmoji(codes[i])}</div>
+    <div class="temp" style="color:${color}">
+      ${formatShort(temp, unit)}
+    </div>
+  `;
+
+  item.addEventListener("click", () => {
+    openHourOverlay(i);
+  });
+
+  frag.appendChild(item);
 }
 
+el.innerHTML = "";
+el.appendChild(frag);
+
+}
+
+ // ✅ FERMETURE IMPORTANTE
 
 /* =====================================================
    SCROLL
@@ -133,3 +142,29 @@ function getWeatherEmoji(code) {
   if (code <= 99) return "⛈️";
   return "🌡️";
 }
+/* ===============================
+   LIVE UPDATE (SANS REPAINT)
+================================ */
+
+document.addEventListener("time:tick", () => {
+  const el = getContainer();
+  if (!el || !lastRaw?.hourly) return;
+
+  const times = lastRaw.hourly.time;
+  const now = Date.now();
+
+  let newIndex = times.findIndex(t => new Date(t).getTime() >= now);
+  if (newIndex < 0) return;
+
+  const items = el.querySelectorAll(".timeline-hour");
+
+  items.forEach(i => i.classList.remove("active"));
+
+  if (items[newIndex]) {
+    items[newIndex].classList.add("active");
+  }
+});
+document.addEventListener("temp:unit-change", () => {
+  if (lastRaw) render();
+});
+
